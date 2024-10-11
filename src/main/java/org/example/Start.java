@@ -64,7 +64,7 @@ public class Start {
                     isRunning = false;
                     break;
                 case "2":
-                    habitsManagement.habitsManagement();
+                    habitsManagement.habitsManagement(currentPerson);
                     isRunning = false;
                     break;
                 case "3":

@@ -8,17 +8,16 @@ public class Person {
     private String email;
     private String password;
     private String name;
+    private boolean isAdmin;
+    private boolean isBanned;
     private List<Habit> habits = new ArrayList<>();
 
     public Person(String email, String password, String name) {
         this.email = email;
         this.password = password;
         this.name = name;
-    }
-
-    public String getPasswordResetCode() {
-        Random random = new Random();
-        return String.valueOf(random.nextInt(100, 999));
+        isAdmin = false;
+        isBanned = false;
     }
 
     public void addHabit(Habit habit) {
@@ -41,6 +40,21 @@ public class Person {
         this.name = name;
     }
 
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
+    }
+
+    public void setBanned(boolean banned) {
+        isBanned = banned;
+    }
+
+    public boolean isBanned() {
+        return isBanned;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
+    }
     public String getName() {
         return name;
     }
@@ -55,5 +69,14 @@ public class Person {
 
     public List<Habit> getHabits() {
         return habits;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "email='" + email + '\'' +
+                ", name='" + name + '\'' +
+                ", isBanned=" + isBanned +
+                '}';
     }
 }

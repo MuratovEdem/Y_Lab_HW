@@ -1,25 +1,34 @@
-package org.example.management;
+package org.example.frontend.management;
 
+import org.example.controller.HabitController;
+import org.example.frontend.DTO.HabitDTO;
 import org.example.model.Habit;
-import org.example.model.Person;
 
+import java.time.LocalDate;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
-public class HabitsManagement {
+public class HabitManagement {
     private Scanner scanner = new Scanner(System.in);
-    private Person currentPerson;
+    private int personId;
     private Habit currentHabit;
 
-    public void habitsManagement(Person person) {
-        currentPerson = person;
+    private final HabitController habitController;
+
+    public HabitManagement(HabitController habitController) {
+        this.habitController = habitController;
+    }
+
+    public void habitManagement(int personId) {
+        this.personId = personId;
+
         boolean isRunning = true;
 
         while (isRunning) {
             System.out.println("Введите номер необходимой операции");
             System.out.println("1. Создать");
-            System.out.println("2. Просмотреть");
+            System.out.println("2. Просмотреть данные привычки");
             System.out.println("3. Редактировать");
             System.out.println("4. Удалить");
             System.out.println("5. Отметить выполнение привычки");
@@ -31,21 +40,26 @@ public class HabitsManagement {
             switch (userCommand) {
                 case "1":
                     create();
+                    isRunning = false;
                     break;
                 case "2":
                     read();
+                    isRunning = false;
                     break;
                 case "3":
                     update();
+                    isRunning = false;
                     break;
                 case "4":
                     remove();
+                    isRunning = false;
                     break;
                 case "5":
                     markCompletion();
                     isRunning = false;
                     break;
                 case "6":
+                    printHistoryExecution();
                     isRunning = false;
                     break;
                 case "7":
@@ -59,8 +73,12 @@ public class HabitsManagement {
     }
 
     private void printAllHabitsAndChooseCurrentOne() {
-        List<Habit> habits = currentPerson.getHabits();
+        List<Habit> habits = habitController.getHabitsByPersonId(personId);
         boolean isRunning = true;
+        if (habits.isEmpty()) {
+            System.out.println("У вас еще нет привычек");
+            return;
+        }
 
         while (isRunning) {
             System.out.println("Введите номер привычки, с которой хотите работать");
@@ -69,7 +87,7 @@ public class HabitsManagement {
             }
             try {
                 int userCommand = Integer.parseInt(scanner.nextLine());
-                if (userCommand < 0 || userCommand >= habits.size()) {
+                if (userCommand < 0 || userCommand > habits.size()) {
                     System.out.println("Такой привычки нет");
                 }
                 else {
@@ -107,9 +125,9 @@ public class HabitsManagement {
             }
         }
 
-        Habit habit = new Habit(name, description, executionFrequency);
+        HabitDTO habitDTO = new HabitDTO(name, description, executionFrequency);
 
-        currentPerson.addHabit(habit);
+        habitController.createByPersonId(habitDTO, personId);
     }
 
     private void read() {
@@ -142,18 +160,33 @@ public class HabitsManagement {
                 System.out.println("Введено некорректное значение");
             }
         }
-        currentHabit.setName(name);
-        currentHabit.setDescription(description);
-        currentHabit.setExecutionFrequency(executionFrequency);
+        HabitDTO habitDTO = new HabitDTO(name, description, executionFrequency);
+
+        habitController.update(habitDTO, currentHabit);
+
     }
 
     private void remove() {
         printAllHabitsAndChooseCurrentOne();
-        currentPerson.removeHabit(currentHabit);
+        habitController.removeByPersonId(currentHabit, personId);
+
     }
 
     private void markCompletion() {
         printAllHabitsAndChooseCurrentOne();
-        currentHabit.markCompletion();
+
+        if (!habitController.markCompletion(currentHabit)) {
+            System.out.println("Сегодня не тот день");
+        }
+    }
+
+    private void printHistoryExecution() {
+        List<LocalDate> historyExecution = currentHabit.getHistoryExecution();
+        System.out.println("Текущая серия выполнения " + currentHabit.getCurrentStreak());
+        System.out.println("Процент выполнения " + currentHabit.getPercentageCompletion());
+
+        for (int i = 0; i < historyExecution.size(); i++) {
+            System.out.println(historyExecution.get(i));
+        }
     }
 }

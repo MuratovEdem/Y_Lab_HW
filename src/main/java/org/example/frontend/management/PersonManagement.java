@@ -1,16 +1,22 @@
-package org.example.management;
+package org.example.frontend.management;
 
+import org.example.controller.PersonController;
 import org.example.model.Person;
 
 import java.util.Scanner;
 
-public class AccountManagement {
+public class PersonManagement {
 
     private Scanner scanner = new Scanner(System.in);
-    private Person currentPerson;
+    private int personId;
+    private final PersonController personController;
 
-    public void accountManagement(Person person) {
-        currentPerson = person;
+    public PersonManagement(PersonController personController) {
+        this.personController = personController;
+    }
+
+    public void personManagement(int personId) {
+        this.personId = personId;
         boolean isRunning = true;
         while (isRunning) {
             System.out.println("Введите номер необходимой операции");
@@ -38,13 +44,14 @@ public class AccountManagement {
                     break;
             }
         }
+
     }
 
     private void editName() {
         System.out.println("Введите новое имя:");
         String newName = scanner.nextLine();
 
-        currentPerson.setName(newName);
+        personController.editName(personId, newName);
         System.out.println("Имя успешно изменено");
     }
 
@@ -52,7 +59,7 @@ public class AccountManagement {
         System.out.println("Введите новый email:");
         String newEmail = scanner.nextLine();
 
-        currentPerson.setEmail(newEmail);
+        personController.editEmail(personId, newEmail);
         System.out.println("Email успешно изменен");
     }
 
@@ -60,7 +67,7 @@ public class AccountManagement {
         System.out.println("Введите новый пароль:");
         String newPassword = scanner.nextLine();
 
-        currentPerson.setPassword(newPassword);
+        personController.editPassword(personId, newPassword);
         System.out.println("Пароль успешно изменен");
     }
 }

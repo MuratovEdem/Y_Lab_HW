@@ -1,22 +1,38 @@
-package org.example;
+package org.example.frontend;
 
-import org.example.management.AccountManagement;
-import org.example.management.HabitsManagement;
+import org.example.controller.HabitController;
+import org.example.controller.PersonController;
+import org.example.frontend.DTO.PersonDTO;
+import org.example.frontend.management.AdminManagement;
+import org.example.frontend.management.HabitManagement;
+import org.example.frontend.management.PersonManagement;
 import org.example.model.Person;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class Start {
-    private Scanner scanner = new Scanner(System.in);
-    private List<Person> personsList = new ArrayList<>();
-    private Person currentPerson;
-    private AccountManagement accountManagement = new AccountManagement();
-    private HabitsManagement habitsManagement = new HabitsManagement();
+public class MainMenu {
+    private final PersonController personController;
+    private final HabitController habitController;
 
+    private Scanner scanner = new Scanner(System.in);
+    private List<Person> personsList;
+    private int personId;
+    private PersonManagement personManagement;
+    private HabitManagement habitManagement;
+    private AdminManagement adminManagement;
+
+    public MainMenu(PersonController personController, HabitController habitController) {
+        this.personController = personController;
+        this.habitController = habitController;
+
+        personManagement = new PersonManagement(personController);
+        habitManagement = new HabitManagement(habitController);
+        adminManagement = new AdminManagement(personController);
+    }
 
     public void start() {
+        personsList = personController.getPersons();
         boolean isRunning = true;
         while (isRunning) {
             System.out.println("Введите номер необходимой операции");
@@ -48,30 +64,54 @@ public class Start {
         menu();
     }
 
+    public void printReminder(String reminder) {
+        System.out.println(reminder);
+    }
+
+    public int getCurrentLoggedPersonId() {
+        return personId;
+    }
+
     private void menu() {
+        personsList = personController.getPersons();
         boolean isRunning = true;
         while (isRunning) {
             System.out.println("Введите номер необходимой операции");
             System.out.println("1. Управление аккаунтом");
             System.out.println("2. Управление привычками");
             System.out.println("3. Удалить аккаунт");
+            System.out.println("4. Выйти из аккаунта");
+            System.out.println("5. Закрыть");
+
+            if (personsList.get(personId).isAdmin()) {
+                System.out.println("6. Отобразить список всех пользователей");
+            }
 
             String userCommand = scanner.nextLine();
 
             switch (userCommand) {
                 case "1":
-                    accountManagement.accountManagement(currentPerson);
-                    isRunning = false;
+                    personManagement.personManagement(personId);
                     break;
                 case "2":
-                    habitsManagement.habitsManagement(currentPerson);
-                    isRunning = false;
+                    habitManagement.habitManagement(personId);
                     break;
                 case "3":
-                    personsList.remove(currentPerson);
+                    personController.removeByPersonId(personId);
                     System.out.println("Аккаунт успешно удален");
                     start();
+                    break;
+                case "4":
+                    personId = -1;
+                    start();
+                    break;
+                case "5":
                     isRunning = false;
+                    break;
+                case "6":
+                    if (personsList.get(personId).isAdmin()) {
+                        adminManagement.chooseOnePerson();
+                    }
                     break;
                 default:
                     System.out.println("Команда не распознана. Попробуйте снова");
@@ -91,7 +131,7 @@ public class Start {
 
             for (int i = 0; i < personsList.size(); i++) {
                 if (personsList.get(i).getEmail().equals(email) && personsList.get(i).getPassword().equals(password)) {
-                    currentPerson = personsList.get(i);
+                    personId = i;
                     System.out.println("Вы вошли в систему");
                     isCorrectData = true;
                     break;
@@ -128,17 +168,16 @@ public class Start {
         System.out.println("Введите ваше имя:");
         String name = scanner.nextLine();
 
-        Person person = new Person(email, password, name);
+        PersonDTO personDTO = new PersonDTO(email, password, name);
 
-        personsList.add(person);
+        personId = personController.create(personDTO);
 
-        currentPerson = person;
         System.out.println("Регистрация прошла успешно");
         System.out.println("Вы вошли в систему");
     }
 
     private void resetPassword() {
-        Person person = null;
+        int personId = 0;
         String email;
         boolean isRunning = true;
         do {
@@ -147,7 +186,7 @@ public class Start {
 
             for (int i = 0; i < personsList.size(); i++) {
                 if (personsList.get(i).getEmail().equals(email)) {
-                    person = personsList.get(i);
+                    personId = i;
                     isRunning = false;
                     break;
                 }
@@ -158,7 +197,7 @@ public class Start {
 
         do {
             System.out.println("На ваш 'email' отправлен код подтверждения");
-            String code = person.getPasswordResetCode();
+            String code = personController.getPasswordResetCode();
             System.out.println("Код подтверждения: " + code);
             System.out.println("Введите код подтверждения");
 
@@ -176,8 +215,9 @@ public class Start {
         System.out.println("Введите новый пароль: ");
         String newPassword = scanner.nextLine();
 
-        person.setPassword(newPassword);
-        currentPerson = person;
+        personController.editPassword(personId, newPassword);
+        this.personId = personId;
+
         System.out.println("Пароль успешно изменен");
         System.out.println("Вы вошли в систему");
     }

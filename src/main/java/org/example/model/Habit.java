@@ -29,13 +29,17 @@ public class Habit {
     }
 
     public long getPercentageCompletion() {
-        long maxNumberExecutions = Duration.between(LocalDate.now().atStartOfDay(), dateCreation.atStartOfDay()).toDays() / executionFrequency;
-        return (numberExecutions * 100L) / (maxNumberExecutions + 1);
+        long maxNumberExecutions = (Duration.between(dateCreation.atStartOfDay(), LocalDate.now().atStartOfDay()).toDays() + 1) / executionFrequency;
+        return (numberExecutions * 100L) / maxNumberExecutions;
     }
 
     public void setExecutionFrequency(int executionFrequency) {
         this.executionFrequency = executionFrequency;
         nextReminder = lastReminder.plusDays(this.executionFrequency);
+    }
+
+    public LocalDate getLastReminder() {
+        return lastReminder;
     }
 
     public int getExecutionFrequency() {
@@ -74,12 +78,20 @@ public class Habit {
         this.nextReminder = nextReminder;
     }
 
+    public void setDateCreation(LocalDate dateCreation) {
+        this.dateCreation = dateCreation;
+    }
+
     public void setCurrentStreak(int currentStreak) {
         this.currentStreak = currentStreak;
     }
 
     public void setNumberExecutions(int numberExecutions) {
         this.numberExecutions = numberExecutions;
+    }
+
+    public void setLastReminder(LocalDate lastReminder) {
+        this.lastReminder = lastReminder;
     }
 
     public void setDescription(String description) {

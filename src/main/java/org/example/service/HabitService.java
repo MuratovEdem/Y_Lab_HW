@@ -42,11 +42,15 @@ public class HabitService {
         if (habit.getNextReminder().equals(LocalDate.now())) {
             habit.getHistoryExecution().add(LocalDate.now());
             habit.setNextReminder(LocalDate.now().plusDays(habit.getExecutionFrequency()));
+            habit.setLastReminder(LocalDate.now());
+
             int numberExecutions = habit.getNumberExecutions();
             numberExecutions++;
             habit.setNumberExecutions(numberExecutions);
+
             int currentStreak = habit.getCurrentStreak();
             currentStreak++;
+
             habit.setCurrentStreak(currentStreak);
             return true;
         } else if (habit.getNextReminder().isBefore(LocalDate.now())) {

@@ -3,7 +3,6 @@ package org.example.repository;
 import org.example.model.Habit;
 import org.example.model.Person;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Repository {
@@ -13,11 +12,12 @@ public class Repository {
         this.persons = persons;
     }
 
-    public void saveHabitByPersonId(Habit habit, int personId) {
+    public Habit saveHabitByPersonId(Habit habit, int personId) {
         persons.get(personId).addHabit(habit);
+        return habit;
     }
 
-    public List<Habit> getHabitsByPerson(int personId) {
+    public List<Habit> getHabitsByPersonId(int personId) {
         return persons.get(personId).getHabits();
     }
 
@@ -44,6 +44,10 @@ public class Repository {
     public int savePerson(Person person) {
         persons.add(person);
         return persons.indexOf(person);
+    }
+
+    public Person getPersonById(int personId) {
+        return persons.get(personId);
     }
 
     public void removeByPersonId(int personId) {

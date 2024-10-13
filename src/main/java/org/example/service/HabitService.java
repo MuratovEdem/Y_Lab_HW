@@ -18,19 +18,19 @@ public class HabitService {
         this.reminderController = reminderController;
     }
 
-    public void createByPersonId(HabitDTO habitDTO, int personId) {
+    public Habit createByPersonId(HabitDTO habitDTO, int personId) {
         Habit habit = new Habit(habitDTO.getName(), habitDTO.getDescription(), habitDTO.getExecutionFrequency());
-        repository.saveHabitByPersonId(habit, personId);
         reminderController.remindOfHabit(habit, personId);
+        return repository.saveHabitByPersonId(habit, personId);
     }
 
-    public List<Habit> getHabitsByPerson(int personId) {
-        return repository.getHabitsByPerson(personId);
+    public List<Habit> getHabitsByPersonId(int personId) {
+        return repository.getHabitsByPersonId(personId);
     }
 
     public void update(HabitDTO habitDTO, Habit habit) {
         habit.setName(habitDTO.getName());
-        habit.setDescription(habit.getDescription());
+        habit.setDescription(habitDTO.getDescription());
         habit.setExecutionFrequency(habitDTO.getExecutionFrequency());
     }
 
@@ -50,8 +50,8 @@ public class HabitService {
 
             int currentStreak = habit.getCurrentStreak();
             currentStreak++;
-
             habit.setCurrentStreak(currentStreak);
+
             return true;
         } else if (habit.getNextReminder().isBefore(LocalDate.now())) {
             habit.setCurrentStreak(0);

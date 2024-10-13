@@ -21,9 +21,6 @@ public class Main {
         Person person = new Person("email", "1231", "zxc");
         person.setAdmin(true);
 
-//        Habit habit = new Habit("sdf", "vxcvxf", 3);
-//        person.addHabit(habit);
-
         persons.add(person);
 
         for (int i = 0; i < 5; i++) {
@@ -33,7 +30,6 @@ public class Main {
             Person person1 = new Person(email, password, name);
             persons.add(person1);
         }
-
 
         Repository repository = new Repository(persons);
 
@@ -51,13 +47,5 @@ public class Main {
         reminderService.setMainMenu(mainMenu);
 
         mainMenu.start();
-
-//        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();;
-//        service.scheduleWithFixedDelay(new Runnable() {
-//            @Override
-//            public void run() {
-//                System.out.println("Пора выполнить привычку!!");
-//             }}, 0, 3, TimeUnit.SECONDS);
-
     }
 }

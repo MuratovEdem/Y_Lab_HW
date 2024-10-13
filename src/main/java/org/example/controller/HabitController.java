@@ -18,7 +18,7 @@ public class HabitController {
     }
 
     public List<Habit> getHabitsByPersonId(int personId) {
-        return habitService.getHabitsByPerson(personId);
+        return habitService.getHabitsByPersonId(personId);
     }
 
     public void update(HabitDTO habitDTO, Habit habit) {

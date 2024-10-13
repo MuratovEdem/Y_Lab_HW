@@ -19,7 +19,7 @@ public class ReminderService {
                 if (mainMenu.getCurrentLoggedPersonId() == personId) {
                     mainMenu.printReminder("Пора выполнить привычку!!! " + habit.getName());
                 }
-            }}, 0, habit.getExecutionFrequency(), TimeUnit.SECONDS);
+            }}, 0, habit.getExecutionFrequency(), TimeUnit.DAYS);
 
     }
 

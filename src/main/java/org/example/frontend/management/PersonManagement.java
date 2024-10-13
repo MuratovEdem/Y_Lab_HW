@@ -1,7 +1,6 @@
 package org.example.frontend.management;
 
 import org.example.controller.PersonController;
-import org.example.model.Person;
 
 import java.util.Scanner;
 

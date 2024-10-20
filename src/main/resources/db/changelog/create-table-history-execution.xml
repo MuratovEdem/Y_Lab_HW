@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <changeSet id="create-table-history-execution" author="ylab">
+        <createTable tableName="history_execution" schemaName="service">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="date_execution" type="date"/>
+            <column name="habit_id" type="BIGINT"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="history_execution" baseColumnNames="habit_id" baseTableSchemaName="service"
+                                 constraintName="date_execution_id_habit_id"
+                                 referencedTableName="habits" referencedColumnNames="id" onUpdate="CASCADE" onDelete="CASCADE" referencedTableSchemaName="model"/>
+    </changeSet>
+</databaseChangeLog>

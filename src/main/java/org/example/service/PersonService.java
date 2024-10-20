@@ -2,37 +2,42 @@ package org.example.service;
 
 import org.example.frontend.DTO.PersonDTO;
 import org.example.model.Person;
-import org.example.repository.Repository;
+import org.example.repository.PersonRepositoryImpl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 public class PersonService {
-    private final Repository repository;
+    private final PersonRepositoryImpl personRepository;
 
-    public PersonService(Repository repository) {
-        this.repository = repository;
+    public PersonService(PersonRepositoryImpl personRepository) {
+        this.personRepository = personRepository;
     }
 
     public List<Person> getPersons() {
-        return repository.getPersons();
+        return personRepository.getAll();
     }
 
-    public void editName(int personId, String newName) {
-        repository.editName(personId, newName);
+    public Optional<Person> getById(long personId) {
+        return personRepository.getById(personId);
     }
 
-    public void editEmail(int personId, String newEmail) {
-        repository.editEmail(personId, newEmail);
+    public void editName(long personId, String newName) {
+        personRepository.editNameById(personId, newName);
     }
 
-    public void editPassword(int personId, String newPassword) {
-        repository.editPassword(personId, newPassword);
+    public void editEmail(long personId, String newEmail) {
+        personRepository.editEmailById(personId, newEmail);
     }
 
-    public int create(PersonDTO personDTO) {
+    public void editPassword(long personId, String newPassword) {
+        personRepository.editPasswordById(personId, newPassword);
+    }
+
+    public long create(PersonDTO personDTO) {
         Person person = new Person(personDTO.getEmail(), personDTO.getPassword(), personDTO.getName());
-        return repository.savePerson(person);
+        return personRepository.save(person);
     }
 
     public String getPasswordResetCode() {
@@ -40,21 +45,14 @@ public class PersonService {
         return String.valueOf(random.nextInt(100, 999));
     }
 
-    public void removeByPersonId(int personId) {
-        repository.removeByPersonId(personId);
+    public void removeById(long personId) {
+        personRepository.removeById(personId);
     }
 
     public boolean banPerson(Person currentPerson) {
         if (!currentPerson.isAdmin()) {
-            currentPerson.setBanned(true);
+            personRepository.editIsBannedById(currentPerson.getId(), true);
             return true;
-        }
-        return false;
-    }
-
-    public boolean deletePerson(Person person) {
-        if (!person.isAdmin()) {
-            return repository.removePerson(person);
         }
         return false;
     }

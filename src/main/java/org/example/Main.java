@@ -4,42 +4,34 @@ import org.example.controller.HabitController;
 import org.example.controller.PersonController;
 import org.example.controller.ReminderController;
 import org.example.frontend.MainMenu;
-import org.example.model.Habit;
-import org.example.model.Person;
-import org.example.repository.Repository;
+import org.example.repository.*;
 import org.example.service.HabitService;
 import org.example.service.PersonService;
 import org.example.service.ReminderService;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Connection;
 
 public class Main {
     public static void main(String[] args) {
-        List<Person> persons = new ArrayList<>();
+        DataBaseConnection dataBaseConnection = new DataBaseConnection();
 
-        Person person = new Person("email", "1231", "zxc");
-        person.setAdmin(true);
+        Connection connection = dataBaseConnection.getConnection();
 
-        persons.add(person);
+        LiquibaseLoader liquibaseLoader = new LiquibaseLoader(connection);
 
-        for (int i = 0; i < 5; i++) {
-            String email = "email" + i;
-            String password = "pass" + i;
-            String name = "name" + i;
-            Person person1 = new Person(email, password, name);
-            persons.add(person1);
-        }
+        liquibaseLoader.runLiquibase();
 
-        Repository repository = new Repository(persons);
+        PersonRepositoryImpl personRepository = new PersonRepository(connection);
 
-        PersonService personService = new PersonService(repository);
+        HabitRepositoryImpl habitRepository = new HabitRepository(dataBaseConnection.getConnection());
+
+        PersonService personService = new PersonService(personRepository);
         PersonController personController = new PersonController(personService);
 
         ReminderService reminderService = new ReminderService();
         ReminderController reminderController = new ReminderController(reminderService);
 
-        HabitService habitService = new HabitService(repository, reminderController);
+        HabitService habitService = new HabitService(habitRepository, reminderController);
         HabitController habitController = new HabitController(habitService);
 
         MainMenu mainMenu = new MainMenu(personController, habitController);

@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:14.8-alpine3.18
+    environment:
+      POSTGRES_DB: "ylab_db"
+      POSTGRES_USER: "ylab_user"
+      POSTGRES_PASSWORD: "ylab_pass"
+    ports:
+      - "5433:5432"

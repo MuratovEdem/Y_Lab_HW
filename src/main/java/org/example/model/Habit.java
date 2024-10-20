@@ -1,16 +1,21 @@
 package org.example.model;
 
+import lombok.Data;
+
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 public class Habit {
+    private long id;
     private String name;
     private String description;
     private int executionFrequency;
     private int numberExecutions = 0;
     private int currentStreak = 0;
+    private long personId;
 
     private LocalDate dateCreation;
     private LocalDate lastReminder;
@@ -36,66 +41,6 @@ public class Habit {
     public void setExecutionFrequency(int executionFrequency) {
         this.executionFrequency = executionFrequency;
         nextReminder = lastReminder.plusDays(this.executionFrequency);
-    }
-
-    public LocalDate getLastReminder() {
-        return lastReminder;
-    }
-
-    public int getExecutionFrequency() {
-        return executionFrequency;
-    }
-
-    public int getNumberExecutions() {
-        return numberExecutions;
-    }
-
-    public LocalDate getNextReminder() {
-        return nextReminder;
-    }
-
-    public int getCurrentStreak() {
-        return currentStreak;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public List<LocalDate> getHistoryExecution() {
-        return historyExecution;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setNextReminder(LocalDate nextReminder) {
-        this.nextReminder = nextReminder;
-    }
-
-    public void setDateCreation(LocalDate dateCreation) {
-        this.dateCreation = dateCreation;
-    }
-
-    public void setCurrentStreak(int currentStreak) {
-        this.currentStreak = currentStreak;
-    }
-
-    public void setNumberExecutions(int numberExecutions) {
-        this.numberExecutions = numberExecutions;
-    }
-
-    public void setLastReminder(LocalDate lastReminder) {
-        this.lastReminder = lastReminder;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     @Override

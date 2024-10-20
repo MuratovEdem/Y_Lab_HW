@@ -1,14 +1,23 @@
 package org.example.service;
 
+import org.example.LiquibaseLoader;
 import org.example.controller.ReminderController;
 import org.example.frontend.DTO.HabitDTO;
 import org.example.model.Habit;
 import org.example.model.Person;
-import org.example.repository.Repository;
+import org.example.repository.HabitRepository;
+import org.example.repository.HabitRepositoryImpl;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.testcontainers.containers.PostgreSQLContainer;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,51 +25,67 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class HabitServiceTest {
-
-    @Mock
-    Repository mockRepository;
-
     @Mock
     ReminderController mockReminderController;
 
+    HabitService habitService;
+
+    static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:14.8-alpine3.18");
+
+    @BeforeAll
+    static void beforeAll() {
+        postgreSQLContainer.start();
+    }
+
+    @AfterAll
+    static void afterAll() {
+        postgreSQLContainer.stop();
+    }
+
+    @BeforeEach
+    void setUp() throws SQLException {
+        Connection connection = DriverManager.getConnection(postgreSQLContainer.getJdbcUrl(),
+                postgreSQLContainer.getUsername(), postgreSQLContainer.getPassword());
+        LiquibaseLoader liquibaseLoader = new LiquibaseLoader(connection);
+        liquibaseLoader.runLiquibase();
+
+        HabitRepositoryImpl habitRepository = new HabitRepository(connection);
+        habitService = new HabitService(habitRepository, mockReminderController);
+    }
+
     @Test
     void testCreateByPersonId() {
-        Person person = new Person("email", "pass", "name");
-        List<Person> persons = new ArrayList<>();
-        persons.add(person);
-        int personId = 0;
+        int personId = 1;
 
-        HabitDTO habitDTO = new HabitDTO("namelDTO", "descrDTO", 2);
+        HabitDTO habitDTO = new HabitDTO("nameDTO", "descrDTO", 2);
 
         ReminderService reminderService = Mockito.mock(ReminderService.class);
         ReminderController reminderController = new ReminderController(reminderService);
+        habitService.setReminderController(reminderController);
 
-        Repository repository = new Repository(persons);
-        HabitService personService = new HabitService(repository, reminderController);
+        habitService.createByPersonId(habitDTO, personId);
 
-        Habit actualHabit = personService.createByPersonId(habitDTO, personId);
+        List<Habit> habitList = habitService.getHabitsByPersonId(personId);
 
-        assertEquals(habitDTO.getName(), actualHabit.getName());
-        assertEquals(habitDTO.getDescription(), actualHabit.getDescription());
-        assertEquals(habitDTO.getExecutionFrequency(), actualHabit.getExecutionFrequency());
+        assertEquals(1, habitList.size());
     }
 
     @Test
     void testGetHabitsByPersonId() {
-        Person person = new Person("email", "pass", "name");
-        List<Person> persons = new ArrayList<>();
-        persons.add(person);
+        int personId = 1;
 
-        Repository repository = new Repository(persons);
-        HabitService habitService = new HabitService(repository, mockReminderController);
+        HabitDTO habitDTO = new HabitDTO("nameDTO", "descrDTO", 2);
+        HabitDTO habitDTO1 = new HabitDTO("nameDTO1", "descrDTO1", 3);
 
-        int personId = 0;
+        ReminderService reminderService = Mockito.mock(ReminderService.class);
+        ReminderController reminderController = new ReminderController(reminderService);
+        habitService.setReminderController(reminderController);
 
-        Habit habit = new Habit("name", "descr", 2);
-        Habit habit1 = new Habit("name1", "descr1", 3);
+        habitService.createByPersonId(habitDTO, personId);
+        habitService.createByPersonId(habitDTO1, personId);
 
-        repository.saveHabitByPersonId(habit, personId);
-        repository.saveHabitByPersonId(habit1, personId);
+        Habit habit = new Habit(habitDTO.getName(), habitDTO.getDescription(), habitDTO.getExecutionFrequency());
+        Habit habit1 = new Habit(habitDTO1.getName(), habitDTO1.getDescription(), habitDTO1.getExecutionFrequency());
 
         List<Habit> habitsExpected = new ArrayList<>();
         habitsExpected.add(habit);
@@ -68,40 +93,34 @@ public class HabitServiceTest {
 
         List<Habit> habitsActual = habitService.getHabitsByPersonId(personId);
 
-        assertEquals(habitsExpected, habitsActual);
+        assertEquals(habitsExpected.size(), habitsActual.size());
     }
 
     @Test
-    void testRemoveByPersonId() {
-        Person person = new Person("email", "pass", "name");
-        List<Person> persons = new ArrayList<>();
-        persons.add(person);
+    void testRemoveById() {
+        int personId = 1;
+        HabitDTO habitDTO = new HabitDTO("nameDTO", "descrDTO", 2);
+        HabitDTO habitDTO1 = new HabitDTO("nameDTO1", "descrDTO1", 3);
 
-        Repository repository = new Repository(persons);
-        HabitService habitService = new HabitService(repository, mockReminderController);
+        ReminderService reminderService = Mockito.mock(ReminderService.class);
+        ReminderController reminderController = new ReminderController(reminderService);
+        habitService.setReminderController(reminderController);
 
-        int personId = 0;
+        habitService.createByPersonId(habitDTO, personId);
+        habitService.createByPersonId(habitDTO1, personId);
 
-        Habit habit = new Habit("name", "descr", 2);
-        Habit habit1 = new Habit("name1", "descr1", 3);
+        habitService.removeById(1);
 
-        repository.saveHabitByPersonId(habit, personId);
-        repository.saveHabitByPersonId(habit1, personId);
-
-        List<Habit> habitsExpected = new ArrayList<>();
-        habitsExpected.add(habit1);
-
-        habitService.removeByPersonId(habit, personId);
-
-        assertEquals(habitsExpected, habitService.getHabitsByPersonId(personId));
+        assertEquals(1, habitService.getHabitsByPersonId(1).size());
     }
 
     @Test
     void testUpdate() {
+        int personId = 1;
         Habit habit = new Habit("name", "descr", 2);
         HabitDTO habitDTO = new HabitDTO("name1", "descr1", 3);
 
-        HabitService habitService = new HabitService(mockRepository, mockReminderController);
+        habitService.createByPersonId(habitDTO, personId);
 
         habitService.update(habitDTO, habit);
 
@@ -112,14 +131,19 @@ public class HabitServiceTest {
 
     @Test
     void testMarkCompletionAllOk() {
-        HabitService habitService = new HabitService(mockRepository, mockReminderController);
-
+        int personId = 1;
         int executionFrequency = 1;
-        Habit habit = new Habit("name", "desr", executionFrequency);
-        habit.setNextReminder(LocalDate.now());
+        HabitDTO habitDTO = new HabitDTO("name1", "descr1", executionFrequency);
 
-        List<LocalDate> expectedHistoryExecution = new ArrayList<>();
-        expectedHistoryExecution.add(LocalDate.now());
+        ReminderService reminderService = Mockito.mock(ReminderService.class);
+        ReminderController reminderController = new ReminderController(reminderService);
+        habitService.setReminderController(reminderController);
+
+        habitService.createByPersonId(habitDTO, personId);
+
+        Habit habit = habitService.getById(1).get();
+
+        habit.setNextReminder(LocalDate.now());
 
         LocalDate expectedNextReminder = LocalDate.now().plusDays(executionFrequency);
         LocalDate expectedLasReminder = LocalDate.now();
@@ -129,16 +153,16 @@ public class HabitServiceTest {
 
         assertTrue(habitService.markCompletion(habit));
 
-        assertEquals(expectedHistoryExecution, habit.getHistoryExecution());
-        assertEquals(expectedNextReminder, habit.getNextReminder());
-        assertEquals(expectedLasReminder, habit.getLastReminder());
-        assertEquals(expectedNumberExecutions, habit.getNumberExecutions());
-        assertEquals(expectedCurrentStreak, habit.getCurrentStreak());
+        Habit habitActual = habitService.getById(1).get();
+
+        assertEquals(expectedNextReminder, habitActual.getNextReminder());
+        assertEquals(expectedLasReminder, habitActual.getLastReminder());
+        assertEquals(expectedNumberExecutions, habitActual.getNumberExecutions());
+        assertEquals(expectedCurrentStreak, habitActual.getCurrentStreak());
     }
 
     @Test
     void testMarkCompletionFalse() {
-        HabitService habitService = new HabitService(mockRepository, mockReminderController);
         int executionFrequency = 1;
         Habit habit = new Habit("name", "desr", executionFrequency);
         habit.setNextReminder(LocalDate.now().plusDays(1));

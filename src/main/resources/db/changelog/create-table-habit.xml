@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <changeSet id="create-table-habit" author="ylab">
+        <createTable tableName="habits" schemaName="model">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="execution_frequency" type="int"/>
+            <column name="number_executions" type="int"/>
+            <column name="current_streak" type="int"/>
+            <column name="date_creation" type="date"/>
+            <column name="last_reminder" type="date"/>
+            <column name="next_reminder" type="date"/>
+            <column name="person_id" type="BIGINT"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="habits" baseColumnNames="person_id" baseTableSchemaName="model"
+                                 constraintName="habit_author_id_person_id"
+                                 referencedTableName="persons" referencedColumnNames="id" onUpdate="CASCADE" onDelete="CASCADE" referencedTableSchemaName="model"/>
+    </changeSet>
+</databaseChangeLog>

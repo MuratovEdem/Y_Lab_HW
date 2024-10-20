@@ -11,7 +11,7 @@ public class ReminderService {
 
     private MainMenu mainMenu;
 
-    public void remindOfHabit(Habit habit, int personId) {
+    public void remindOfHabit(Habit habit, long personId) {
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         service.scheduleWithFixedDelay(new Runnable() {
             @Override

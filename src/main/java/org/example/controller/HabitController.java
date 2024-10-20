@@ -13,11 +13,11 @@ public class HabitController {
         this.habitService = habitService;
     }
 
-    public void createByPersonId(HabitDTO habit, int personId) {
+    public void createByPersonId(HabitDTO habit, long personId) {
         habitService.createByPersonId(habit, personId);
     }
 
-    public List<Habit> getHabitsByPersonId(int personId) {
+    public List<Habit> getHabitsByPersonId(long personId) {
         return habitService.getHabitsByPersonId(personId);
     }
 
@@ -25,8 +25,8 @@ public class HabitController {
         habitService.update(habitDTO, habit);
     }
 
-    public void removeByPersonId(Habit habit, int personId) {
-        habitService.removeByPersonId(habit, personId);
+    public void removeById(long habitId) {
+        habitService.removeById(habitId);
     }
 
     public boolean markCompletion(Habit habit) {

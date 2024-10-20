@@ -11,7 +11,7 @@ import java.util.Scanner;
 
 public class HabitManagement {
     private Scanner scanner = new Scanner(System.in);
-    private int personId;
+    private long personId;
     private Habit currentHabit;
 
     private final HabitController habitController;
@@ -20,7 +20,7 @@ public class HabitManagement {
         this.habitController = habitController;
     }
 
-    public void habitManagement(int personId) {
+    public void habitManagement(long personId) {
         this.personId = personId;
 
         boolean isRunning = true;
@@ -168,8 +168,7 @@ public class HabitManagement {
 
     private void remove() {
         printAllHabitsAndChooseCurrentOne();
-        habitController.removeByPersonId(currentHabit, personId);
-
+        habitController.removeById(currentHabit.getId());
     }
 
     private void markCompletion() {

@@ -17,7 +17,7 @@ public class MainMenu {
 
     private Scanner scanner = new Scanner(System.in);
     private List<Person> personsList;
-    private int personId;
+    private long personId;
     private PersonManagement personManagement;
     private HabitManagement habitManagement;
     private AdminManagement adminManagement;
@@ -28,7 +28,7 @@ public class MainMenu {
 
         personManagement = new PersonManagement(personController);
         habitManagement = new HabitManagement(habitController);
-        adminManagement = new AdminManagement(personController);
+        adminManagement = new AdminManagement(personController, habitController);
     }
 
     public void start() {
@@ -68,7 +68,7 @@ public class MainMenu {
         System.out.println(reminder);
     }
 
-    public int getCurrentLoggedPersonId() {
+    public long getCurrentLoggedPersonId() {
         return personId;
     }
 
@@ -83,7 +83,7 @@ public class MainMenu {
             System.out.println("4. Выйти из аккаунта");
             System.out.println("5. Закрыть");
 
-            if (personsList.get(personId).isAdmin()) {
+            if (personsList.get((int) personId).isAdmin()) {
                 System.out.println("6. Отобразить список всех пользователей");
             }
 
@@ -97,7 +97,7 @@ public class MainMenu {
                     habitManagement.habitManagement(personId);
                     break;
                 case "3":
-                    personController.removeByPersonId(personId);
+                    personController.removeById(personId);
                     System.out.println("Аккаунт успешно удален");
                     start();
                     break;
@@ -109,7 +109,7 @@ public class MainMenu {
                     isRunning = false;
                     break;
                 case "6":
-                    if (personsList.get(personId).isAdmin()) {
+                    if (personsList.get((int) personId).isAdmin()) {
                         adminManagement.chooseOnePerson();
                     }
                     break;

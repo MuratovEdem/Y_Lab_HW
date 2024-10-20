@@ -1,5 +1,6 @@
 package org.example.frontend.management;
 
+import org.example.controller.HabitController;
 import org.example.controller.PersonController;
 import org.example.model.Habit;
 import org.example.model.Person;
@@ -9,12 +10,14 @@ import java.util.Scanner;
 
 public class AdminManagement {
     private final PersonController personController;
+    private final HabitController habitController;
 
     private Scanner scanner = new Scanner(System.in);
     private Person currentPerson;
 
-    public AdminManagement(PersonController personController) {
+    public AdminManagement(PersonController personController, HabitController habitController) {
         this.personController = personController;
+        this.habitController = habitController;
     }
 
     public void chooseOnePerson() {
@@ -73,7 +76,7 @@ public class AdminManagement {
     }
 
     private void checkHabits() {
-        List<Habit> habits = currentPerson.getHabits();
+        List<Habit> habits = habitController.getHabitsByPersonId(currentPerson.getId());
         for (int i = 0; i < habits.size(); i++) {
             System.out.println(habits.get(i));
         }
@@ -89,9 +92,11 @@ public class AdminManagement {
     }
 
     private void deletePerson() {
-        if (personController.deletePerson(currentPerson)) {
+        if (!currentPerson.isAdmin()) {
+            personController.removeById(currentPerson.getId());
             System.out.println("Пользователь успешно удален");
-        } else {
+        }
+        else {
             System.out.println("Ошибка. Данный пользователя нельзя удалить");
         }
     }

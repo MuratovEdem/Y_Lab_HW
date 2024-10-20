@@ -7,14 +7,14 @@ import java.util.Scanner;
 public class PersonManagement {
 
     private Scanner scanner = new Scanner(System.in);
-    private int personId;
+    private long personId;
     private final PersonController personController;
 
     public PersonManagement(PersonController personController) {
         this.personController = personController;
     }
 
-    public void personManagement(int personId) {
+    public void personManagement(long personId) {
         this.personId = personId;
         boolean isRunning = true;
         while (isRunning) {

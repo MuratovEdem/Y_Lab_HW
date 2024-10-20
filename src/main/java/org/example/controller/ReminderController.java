@@ -11,7 +11,7 @@ public class ReminderController {
         this.reminderService = reminderService;
     }
 
-    public void remindOfHabit(Habit habit, int personId) {
+    public void remindOfHabit(Habit habit, long personId) {
         reminderService.remindOfHabit(habit, personId);
     }
 }

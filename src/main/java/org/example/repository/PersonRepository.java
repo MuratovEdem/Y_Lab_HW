@@ -1,6 +1,8 @@
 package org.example.repository;
 
+import org.example.exception.JDBCExceptions;
 import org.example.model.Person;
+
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -20,8 +22,7 @@ public class PersonRepository implements PersonRepositoryImpl {
         String query = "SELECT * FROM model.persons";
 
         List<Person> personsList = new ArrayList<>();
-        try {
-            PreparedStatement statement = connection.prepareStatement(query);
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
@@ -30,8 +31,9 @@ public class PersonRepository implements PersonRepositoryImpl {
                 personsList.add(person);
             }
 
+            resultSet.close();
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            JDBCExceptions.printSQLException(e);
         }
         return personsList;
     }
@@ -39,13 +41,13 @@ public class PersonRepository implements PersonRepositoryImpl {
     @Override
     public long save(Person person) {
         long resultId = -1;
-        try {
+        String query = "INSERT INTO model.persons (email, password, name, is_admin, is_banned)" +
+                "VALUES (?, ?, ?, ?, ?)";
+        String querySelect = "SELECT id FROM model.persons WHERE email = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query);
+             PreparedStatement selectStatement = connection.prepareStatement(querySelect)) {
             connection.setAutoCommit(false);
 
-            String query = "INSERT INTO model.persons (email, password, name, is_admin, is_banned)" +
-                    "VALUES (?, ?, ?, ?, ?)";
-
-            PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, person.getEmail());
             statement.setString(2, person.getPassword());
             statement.setString(3, person.getName());
@@ -57,32 +59,38 @@ public class PersonRepository implements PersonRepositoryImpl {
             connection.commit();
             connection.setAutoCommit(true);
 
-            query = "SELECT id FROM model.persons WHERE email = ?";
-            statement = connection.prepareStatement(query);
-            statement.setString(1, person.getEmail());
-            ResultSet resultSet = statement.executeQuery();
+            selectStatement.setString(1, person.getEmail());
+
+            ResultSet resultSet = selectStatement.executeQuery();
             resultId = resultSet.getLong("id");
 
+            resultSet.close();
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            try {
+                JDBCExceptions.printSQLException(e);
+                connection.rollback();
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                JDBCExceptions.printSQLException(ex);
+            }
         }
         return resultId;
     }
 
     @Override
     public Optional<Person> getById(long id) {
-        try {
-            String query = "SELECT * FROM model.persons WHERE id = ?";
+        String query = "SELECT * FROM model.persons WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)){
 
-            PreparedStatement statement = connection.prepareStatement(query);;
             statement.setLong(1, id);
 
             ResultSet resultSet = statement.executeQuery();
 
             Person person = getPerson(resultSet);
+            resultSet.close();
             return Optional.of(person);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            JDBCExceptions.printSQLException(e);
         }
 
         return Optional.empty();
@@ -90,28 +98,32 @@ public class PersonRepository implements PersonRepositoryImpl {
 
     @Override
     public void removeById(long id) {
-        try {
+        String query = "DELETE FROM model.persons WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)){
             connection.setAutoCommit(false);
-            String query = "DELETE FROM model.persons WHERE id = ?";
 
-            PreparedStatement statement = connection.prepareStatement(query);
             statement.setLong(1, id);
             statement.execute();
 
             connection.commit();
             connection.setAutoCommit(true);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            try {
+                JDBCExceptions.printSQLException(e);
+                connection.rollback();
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                JDBCExceptions.printSQLException(ex);
+            }
         }
     }
 
     @Override
     public void editNameById(long id, String newName) {
-        try {
+        String query = "UPDATE model.persons SET name = ? WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
             connection.setAutoCommit(false);
-            String query = "UPDATE model.persons SET name = ? WHERE id = ?";
 
-            PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, newName);
             statement.setLong(2, id);
             statement.execute();
@@ -119,17 +131,22 @@ public class PersonRepository implements PersonRepositoryImpl {
             connection.commit();
             connection.setAutoCommit(true);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            try {
+                JDBCExceptions.printSQLException(e);
+                connection.rollback();
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                JDBCExceptions.printSQLException(ex);
+            }
         }
     }
 
     @Override
     public void editEmailById(long id, String newEmail) {
-        try {
+        String query = "UPDATE model.persons SET email = ? WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)){
             connection.setAutoCommit(false);
-            String query = "UPDATE model.persons SET email = ? WHERE id = ?";
 
-            PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, newEmail);
             statement.setLong(2, id);
             statement.execute();
@@ -137,17 +154,23 @@ public class PersonRepository implements PersonRepositoryImpl {
             connection.commit();
             connection.setAutoCommit(true);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            try {
+                JDBCExceptions.printSQLException(e);
+                connection.rollback();
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                JDBCExceptions.printSQLException(ex);
+            }
         }
     }
 
     @Override
     public void editPasswordById(long id, String newPassword) {
-        try {
-            connection.setAutoCommit(false);
-            String query = "UPDATE model.persons SET password = ? WHERE id = ?";
+        String query = "UPDATE model.persons SET password = ? WHERE id = ?";
 
-            PreparedStatement statement = connection.prepareStatement(query);
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            connection.setAutoCommit(false);
+
             statement.setString(1, newPassword);
             statement.setLong(2, id);
             statement.execute();
@@ -155,17 +178,23 @@ public class PersonRepository implements PersonRepositoryImpl {
             connection.commit();
             connection.setAutoCommit(true);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            try {
+                JDBCExceptions.printSQLException(e);
+                connection.rollback();
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                JDBCExceptions.printSQLException(ex);
+            }
         }
     }
 
     @Override
     public void editIsBannedById(long id, boolean isBanned) {
-        try {
-            connection.setAutoCommit(false);
-            String query = "UPDATE model.persons SET is_banned = ? WHERE id = ?";
+        String query = "UPDATE model.persons SET is_banned = ? WHERE id = ?";
 
-            PreparedStatement statement = connection.prepareStatement(query);
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            connection.setAutoCommit(false);
+
             statement.setBoolean(1, isBanned);
             statement.setLong(2, id);
             statement.execute();
@@ -173,7 +202,13 @@ public class PersonRepository implements PersonRepositoryImpl {
             connection.commit();
             connection.setAutoCommit(true);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            try {
+                JDBCExceptions.printSQLException(e);
+                connection.rollback();
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                JDBCExceptions.printSQLException(ex);
+            }
         }
     }
 

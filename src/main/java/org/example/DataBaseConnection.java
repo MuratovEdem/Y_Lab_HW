@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.exception.JDBCExceptions;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -14,13 +16,6 @@ public class DataBaseConnection {
     private Connection connection;
 
     public Connection getConnection() {
-        if (connection == null) {
-            setConnection();
-        }
-        return connection;
-    }
-
-    private void setConnection() {
         File configFile = new File("src\\main\\resources\\database.properties");
 
         try (FileReader reader = new FileReader(configFile)) {
@@ -33,13 +28,20 @@ public class DataBaseConnection {
 
             connection = DriverManager.getConnection(url, user, pass);
         } catch (FileNotFoundException e) {
-            System.out.println("File not found");;
+            System.out.println("File not found");
         } catch (IOException e) {
             System.out.println("I/O error");
         } catch (SQLException e) {
             System.out.println("Connection error");
         }
+        return connection;
     }
 
-
+    public void closeConnection() {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            JDBCExceptions.printSQLException(e);
+        }
+    }
 }

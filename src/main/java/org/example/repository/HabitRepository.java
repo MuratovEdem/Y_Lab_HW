@@ -1,8 +1,13 @@
 package org.example.repository;
 
+import org.example.exception.JDBCExceptions;
 import org.example.model.Habit;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,14 +23,12 @@ public class HabitRepository implements HabitRepositoryImpl{
 
     @Override
     public void saveByPersonId(long id, Habit habit) {
-        try {
+        String query = "INSERT INTO model.habits (name, description, execution_frequency, number_executions," +
+                " current_streak, date_creation, last_reminder, next_reminder, person_id)" +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement statement = connection.prepareStatement(query)){
             connection.setAutoCommit(false);
 
-            String query = "INSERT INTO model.habits (name, description, execution_frequency, number_executions," +
-                    " current_streak, date_creation, last_reminder, next_reminder, person_id)" +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-            PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, habit.getName());
             statement.setString(2, habit.getDescription());
             statement.setInt(3, habit.getExecutionFrequency());
@@ -40,18 +43,23 @@ public class HabitRepository implements HabitRepositoryImpl{
             connection.commit();
             connection.setAutoCommit(true);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            try {
+                connection.rollback();
+                connection.setAutoCommit(true);
+                JDBCExceptions.printSQLException(e);
+            } catch (SQLException ex) {
+                JDBCExceptions.printSQLException(ex);
+            }
         }
     }
 
     @Override
     public List<Habit> getByPersonId(long personId) {
         List<Habit> habitList = new ArrayList<>();
+        String query = "SELECT * FROM model.habits WHERE person_id = ?";
 
-        try {
-            String query = "SELECT * FROM model.habits WHERE person_id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
 
-            PreparedStatement statement = connection.prepareStatement(query);;
             statement.setLong(1, personId);
 
             ResultSet resultSet = statement.executeQuery();
@@ -59,27 +67,30 @@ public class HabitRepository implements HabitRepositoryImpl{
             while (resultSet.next()) {
                 habitList.add(getHabit(resultSet));
             }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
 
+            resultSet.close();
+        } catch (SQLException e) {
+            JDBCExceptions.printSQLException(e);
+        }
         return habitList;
     }
 
     @Override
     public Optional<Habit> getById(long id) {
-        try {
-            String query = "SELECT * FROM model.habits WHERE id = ?";
-
-            PreparedStatement statement = connection.prepareStatement(query);;
+        String query = "SELECT * FROM model.habits WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)){
             statement.setLong(1, id);
 
             ResultSet resultSet = statement.executeQuery();
             resultSet.next();
+
             Habit habit = getHabit(resultSet);
+
+            resultSet.close();
+
             return Optional.of(habit);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            JDBCExceptions.printSQLException(e);
         }
 
         return Optional.empty();
@@ -87,30 +98,34 @@ public class HabitRepository implements HabitRepositoryImpl{
 
     @Override
     public void removeById(long id) {
-        try {
+        String query = "DELETE FROM model.habits WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
             connection.setAutoCommit(false);
-            String query = "DELETE FROM model.habits WHERE id = ?";
 
-            PreparedStatement statement = connection.prepareStatement(query);
             statement.setLong(1, id);
             statement.execute();
 
             connection.commit();
             connection.setAutoCommit(true);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            try {
+                connection.rollback();
+                connection.setAutoCommit(true);
+                JDBCExceptions.printSQLException(e);
+            } catch (SQLException ex) {
+                JDBCExceptions.printSQLException(ex);
+            }
         }
     }
 
     @Override
     public void update(Habit habit) {
-        try {
+        String query = "UPDATE model.habits SET name = ?, description = ?, execution_frequency = ?, number_executions = ?, " +
+                "current_streak = ?, date_creation = ?, last_reminder = ?, next_reminder = ? " +
+                "WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
             connection.setAutoCommit(false);
-            String query = "UPDATE model.habits SET name = ?, description = ?, execution_frequency = ?, number_executions = ?, " +
-                    "current_streak = ?, date_creation = ?, last_reminder = ?, next_reminder = ? " +
-                    "WHERE id = ?";
 
-            PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, habit.getName());
             statement.setString(2, habit.getDescription());
             statement.setInt(3, habit.getExecutionFrequency());
@@ -126,7 +141,13 @@ public class HabitRepository implements HabitRepositoryImpl{
             connection.commit();
             connection.setAutoCommit(true);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            try {
+                JDBCExceptions.printSQLException(e);
+                connection.rollback();
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                JDBCExceptions.printSQLException(ex);
+            }
         }
     }
 
@@ -146,7 +167,7 @@ public class HabitRepository implements HabitRepositoryImpl{
             connection.commit();
             connection.setAutoCommit(true);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            JDBCExceptions.printSQLException(e);
         }
     }
 

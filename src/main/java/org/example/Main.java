@@ -4,7 +4,10 @@ import org.example.controller.HabitController;
 import org.example.controller.PersonController;
 import org.example.controller.ReminderController;
 import org.example.frontend.MainMenu;
-import org.example.repository.*;
+import org.example.repository.HabitRepository;
+import org.example.repository.HabitRepositoryImpl;
+import org.example.repository.PersonRepository;
+import org.example.repository.PersonRepositoryImpl;
 import org.example.service.HabitService;
 import org.example.service.PersonService;
 import org.example.service.ReminderService;
@@ -39,5 +42,7 @@ public class Main {
         reminderService.setMainMenu(mainMenu);
 
         mainMenu.start();
+
+        dataBaseConnection.closeConnection();
     }
 }

@@ -20,113 +20,113 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class PersonServiceTest {
 
-//    PersonService personService;
-//
-//    static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:14.8-alpine3.18");
-//
-//    @BeforeAll
-//    static void beforeAll() {
-//        postgreSQLContainer.start();
-//    }
-//
-//    @AfterAll
-//    static void afterAll() {
-//        postgreSQLContainer.stop();
-//    }
-//
-//    @BeforeEach
-//    void setUp() throws SQLException {
-//        Connection connection = DriverManager.getConnection(postgreSQLContainer.getJdbcUrl(),
-//                postgreSQLContainer.getUsername(), postgreSQLContainer.getPassword());
-//        LiquibaseLoader liquibaseLoader = new LiquibaseLoader(connection);
-//        liquibaseLoader.runLiquibase();
-//
-//        PersonRepository personRepository = new PersonRepositoryImpl();
-//        personService = new PersonService(personRepository);
-//    }
-//
-//    @Test
-//    void testGetPersons() {
-//        int expectedSize = 3;
-//        List<Person> persons = personService.getPersons();
-//
-//        assertEquals(expectedSize, persons.size());
-//    }
-//
-//    @Test
-//    void testEditName() {
-//        long personId = 1;
-//
-//        String expectedName = "newName";
-//        personService.editName(1, expectedName);
-//
-//        Person person = personService.getById(personId).get();
-//        assertEquals(expectedName, person.getName());
-//    }
-//
-//    @Test
-//    void testEditEmail() {
-//        long personId = 1;
-//
-//        String expectedEmail = "newName";
-//        personService.editName(1, expectedEmail);
-//
-//        Person person = personService.getById(personId).get();
-//        assertEquals(expectedEmail, person.getEmail());
-//    }
-//
-//    @Test
-//    void testEditPassword() {
-//        long personId = 1;
-//
-//        String expectedPassword = "newPassword";
-//        personService.editName(1, expectedPassword);
-//
-//        Person person = personService.getById(personId).get();
-//        assertEquals(expectedPassword, person.getPassword());
-//    }
-//
-//    @Test
-//    void testCreate() {
-//        Person person = new Person("emailDTO", "pasDTO", "nameDTO");
-//
-//        personService.create(person);
-//
-//        assertEquals(4, personService.getPersons().size());
-//    }
-//
-//    @Test
-//    void testRemoveById() {
-//        int personId = 1;
-//
-//        personService.removeById(personId);
-//
-//        Optional<Person> personOpt = personService.getById(personId);
-//
-//        assertTrue(personOpt.isEmpty());
-//    }
-//
-//    @Test
-//    void testBanPersonTrue() {
-//        long personId = 1;
-//        Optional<Person> personOpt = personService.getById(personId);
-//
-//        Person person = personOpt.get();
-//
-//        personService.banPerson(person);
-//
-//        assertTrue(personService.getById(personId).get().isBanned());
-//    }
-//
-//    @Test
-//    void testBanPersonFalse() {
-//        long personId = 2;
-//        Optional<Person> personOpt = personService.getById(personId);
-//
-//        Person person = personOpt.get();
-//
-//        personService.banPerson(person);
-//
-//        assertFalse(personService.getById(personId).get().isBanned());
-//    }
+    PersonService personService;
+
+    static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:14.8-alpine3.18");
+
+    @BeforeAll
+    static void beforeAll() {
+        postgreSQLContainer.start();
+    }
+
+    @AfterAll
+    static void afterAll() {
+        postgreSQLContainer.stop();
+    }
+
+    @BeforeEach
+    void setUp() throws SQLException {
+        Connection connection = DriverManager.getConnection(postgreSQLContainer.getJdbcUrl(),
+                postgreSQLContainer.getUsername(), postgreSQLContainer.getPassword());
+        LiquibaseLoader liquibaseLoader = new LiquibaseLoader(connection);
+        liquibaseLoader.runLiquibase();
+
+        PersonRepository personRepository = new PersonRepositoryImpl();
+        personService = new PersonService(personRepository);
+    }
+
+    @Test
+    void testGetPersons() {
+        int expectedSize = 3;
+        List<Person> persons = personService.getPersons();
+
+        assertEquals(expectedSize, persons.size());
+    }
+
+    @Test
+    void testEditName() {
+        long personId = 1;
+
+        String expectedName = "newName";
+        personService.editName(1, expectedName);
+
+        Person person = personService.getById(personId).get();
+        assertEquals(expectedName, person.getName());
+    }
+
+    @Test
+    void testEditEmail() {
+        long personId = 1;
+
+        String expectedEmail = "newName";
+        personService.editName(1, expectedEmail);
+
+        Person person = personService.getById(personId).get();
+        assertEquals(expectedEmail, person.getEmail());
+    }
+
+    @Test
+    void testEditPassword() {
+        long personId = 1;
+
+        String expectedPassword = "newPassword";
+        personService.editName(1, expectedPassword);
+
+        Person person = personService.getById(personId).get();
+        assertEquals(expectedPassword, person.getPassword());
+    }
+
+    @Test
+    void testCreate() {
+        Person person = new Person("emailDTO", "pasDTO", "nameDTO");
+
+        personService.create(person);
+
+        assertEquals(4, personService.getPersons().size());
+    }
+
+    @Test
+    void testRemoveById() {
+        int personId = 1;
+
+        personService.removeById(personId);
+
+        Optional<Person> personOpt = personService.getById(personId);
+
+        assertTrue(personOpt.isEmpty());
+    }
+
+    @Test
+    void testBanPersonTrue() {
+        long personId = 1;
+        Optional<Person> personOpt = personService.getById(personId);
+
+        Person person = personOpt.get();
+
+        personService.banPerson(person);
+
+        assertTrue(personService.getById(personId).get().isBanned());
+    }
+
+    @Test
+    void testBanPersonFalse() {
+        long personId = 2;
+        Optional<Person> personOpt = personService.getById(personId);
+
+        Person person = personOpt.get();
+
+        personService.banPerson(person);
+
+        assertFalse(personService.getById(personId).get().isBanned());
+    }
 }

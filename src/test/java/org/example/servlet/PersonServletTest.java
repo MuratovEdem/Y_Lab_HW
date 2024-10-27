@@ -95,8 +95,6 @@ public class PersonServletTest {
 
         try (BufferedReader bufferedReader = new BufferedReader(new StringReader(requestBody))) {
             when(request.getReader()).thenReturn(bufferedReader);
-//            when(request.getParameter("username")).thenReturn("me");
-//            when(request.getParameter("password")).thenReturn("secret");
 
             StringWriter stringWriter = new StringWriter();
             PrintWriter writer = new PrintWriter(stringWriter);
@@ -105,13 +103,8 @@ public class PersonServletTest {
             PersonServlet personServlet = new PersonServlet();
             personServlet.setPersonController(personController);
 
-//            when(personController.create(person)).thenReturn(person);
             doReturn(person).when(personController).create(Mockito.any());
             personServlet.doPost(request, response);
-
-//            assertEquals("application/json", response.getContentType());
-//        verify(request, atLeast(1)).getParameter("username");
-//            writer.append(requestBody);
 
             assertTrue(stringWriter.toString().contains("\"id\" : 1,"));
         }

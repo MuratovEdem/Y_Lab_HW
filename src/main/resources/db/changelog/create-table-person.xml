@@ -6,7 +6,7 @@
 
     <changeSet id="create-table-person" author="ylab">
         <createTable tableName="persons" schemaName="model">
-            <column name="id" type="int" autoIncrement="true">
+            <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="email" type="VARCHAR(255)"/>

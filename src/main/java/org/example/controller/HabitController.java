@@ -1,11 +1,13 @@
 package org.example.controller;
 
-import org.example.frontend.DTO.HabitDTO;
+import org.example.annotations.Logging;
 import org.example.model.Habit;
 import org.example.service.HabitService;
 
 import java.util.List;
+import java.util.Optional;
 
+@Logging
 public class HabitController {
     private final HabitService habitService;
 
@@ -13,16 +15,20 @@ public class HabitController {
         this.habitService = habitService;
     }
 
-    public void createByPersonId(HabitDTO habit, long personId) {
-        habitService.createByPersonId(habit, personId);
+    public Habit createByPersonId(long personId, Habit habit) {
+        return habitService.createByPersonId(personId, habit);
     }
 
     public List<Habit> getHabitsByPersonId(long personId) {
         return habitService.getHabitsByPersonId(personId);
     }
 
-    public void update(HabitDTO habitDTO, Habit habit) {
-        habitService.update(habitDTO, habit);
+    public Optional<Habit> getById(long id) {
+        return habitService.getById(id);
+    }
+
+    public void update(Habit habit) {
+        habitService.update(habit);
     }
 
     public void removeById(long habitId) {

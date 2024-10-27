@@ -1,28 +1,28 @@
 package org.example.service;
 
+import org.example.annotations.Logging;
 import org.example.controller.ReminderController;
-import org.example.frontend.DTO.HabitDTO;
 import org.example.model.Habit;
-import org.example.repository.HabitRepositoryImpl;
+import org.example.repository.HabitRepository;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+@Logging
 public class HabitService {
 
-    private final HabitRepositoryImpl habitRepository;
+    private final HabitRepository habitRepository;
     private ReminderController reminderController;
 
-    public HabitService(HabitRepositoryImpl habitRepository, ReminderController reminderController) {
+    public HabitService(HabitRepository habitRepository, ReminderController reminderController) {
         this.habitRepository = habitRepository;
         this.reminderController = reminderController;
     }
 
-    public void createByPersonId(HabitDTO habitDTO, long personId) {
-        Habit habit = new Habit(habitDTO.getName(), habitDTO.getDescription(), habitDTO.getExecutionFrequency());
+    public Habit createByPersonId(long personId, Habit habit) {
         reminderController.remindOfHabit(habit, personId);
-        habitRepository.saveByPersonId(personId, habit);
+        return habitRepository.saveByPersonId(personId, habit);
     }
 
     public List<Habit> getHabitsByPersonId(long personId) {
@@ -33,10 +33,7 @@ public class HabitService {
         return habitRepository.getById(habitId);
     }
 
-    public void update(HabitDTO habitDTO, Habit habit) {
-        habit.setName(habitDTO.getName());
-        habit.setDescription(habitDTO.getDescription());
-        habit.setExecutionFrequency(habitDTO.getExecutionFrequency());
+    public void update(Habit habit) {
         habitRepository.update(habit);
     }
 

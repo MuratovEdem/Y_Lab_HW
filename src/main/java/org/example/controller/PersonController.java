@@ -1,11 +1,13 @@
 package org.example.controller;
 
-import org.example.frontend.DTO.PersonDTO;
+import org.example.annotations.Logging;
 import org.example.model.Person;
 import org.example.service.PersonService;
 
 import java.util.List;
+import java.util.Optional;
 
+@Logging
 public class PersonController {
 
     private final PersonService personService;
@@ -16,6 +18,10 @@ public class PersonController {
 
     public List<Person> getPersons() {
         return personService.getPersons();
+    }
+
+    public Optional<Person> getPersonById(long id) {
+        return personService.getById(id);
     }
 
     public void editName(long personId, String newName) {
@@ -30,8 +36,8 @@ public class PersonController {
         personService.editPassword(personId, newPassword);
     }
 
-    public long create(PersonDTO personDTO) {
-        return personService.create(personDTO);
+    public Person create(Person person) {
+        return personService.create(person);
     }
 
     public String getPasswordResetCode() {

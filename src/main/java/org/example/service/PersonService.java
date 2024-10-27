@@ -1,17 +1,18 @@
 package org.example.service;
 
-import org.example.frontend.DTO.PersonDTO;
+import org.example.annotations.Logging;
 import org.example.model.Person;
-import org.example.repository.PersonRepositoryImpl;
+import org.example.repository.PersonRepository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+@Logging
 public class PersonService {
-    private final PersonRepositoryImpl personRepository;
+    private final PersonRepository personRepository;
 
-    public PersonService(PersonRepositoryImpl personRepository) {
+    public PersonService(PersonRepository personRepository) {
         this.personRepository = personRepository;
     }
 
@@ -35,8 +36,7 @@ public class PersonService {
         personRepository.editPasswordById(personId, newPassword);
     }
 
-    public long create(PersonDTO personDTO) {
-        Person person = new Person(personDTO.getEmail(), personDTO.getPassword(), personDTO.getName());
+    public Person create(Person person) {
         return personRepository.save(person);
     }
 

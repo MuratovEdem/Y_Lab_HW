@@ -1,6 +1,5 @@
 package org.example.service;
 
-import org.example.frontend.MainMenu;
 import org.example.model.Habit;
 
 import java.util.concurrent.Executors;
@@ -9,21 +8,13 @@ import java.util.concurrent.TimeUnit;
 
 public class ReminderService {
 
-    private MainMenu mainMenu;
-
     public void remindOfHabit(Habit habit, long personId) {
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         service.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                if (mainMenu.getCurrentLoggedPersonId() == personId) {
-                    mainMenu.printReminder("Пора выполнить привычку!!! " + habit.getName());
-                }
+                System.out.println("Пора выполнить привычку!!! " + habit.getName());
+
             }}, 0, habit.getExecutionFrequency(), TimeUnit.DAYS);
-
-    }
-
-    public void setMainMenu(MainMenu mainMenu) {
-        this.mainMenu = mainMenu;
     }
 }

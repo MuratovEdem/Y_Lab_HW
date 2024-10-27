@@ -1,21 +1,13 @@
-package org.example.model;
+package org.example.DTO;
 
-public class Person {
+public class PersonDTO {
     private long id;
     private String email;
-    private String password;
     private String name;
+    private String password;
 
     private boolean isAdmin;
     private boolean isBanned;
-
-    public Person(String email, String password, String name) {
-        this.email = email;
-        this.password = password;
-        this.name = name;
-        isAdmin = false;
-        isBanned = false;
-    }
 
     public void setId(long id) {
         this.id = id;
@@ -25,12 +17,12 @@ public class Person {
         this.email = email;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public void setAdmin(boolean admin) {
@@ -49,12 +41,12 @@ public class Person {
         return email;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
     public String getName() {
         return name;
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     public boolean isAdmin() {
@@ -63,14 +55,5 @@ public class Person {
 
     public boolean isBanned() {
         return isBanned;
-    }
-
-    @Override
-    public String toString() {
-        return "Person{" +
-                "email='" + email + '\'' +
-                ", name='" + name + '\'' +
-                ", isBanned=" + isBanned +
-                '}';
     }
 }

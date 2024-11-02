@@ -3,12 +3,14 @@ package org.example.repository;
 import org.example.DataBaseConnection;
 import org.example.exception.JDBCExceptions;
 import org.example.model.Person;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class PersonRepositoryImpl implements PersonRepository {
 
     @Override

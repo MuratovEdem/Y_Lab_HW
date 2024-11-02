@@ -3,12 +3,13 @@ package org.example.service;
 import org.example.annotations.Logging;
 import org.example.model.Person;
 import org.example.repository.PersonRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
-@Logging
+@Service
 public class PersonService {
     private final PersonRepository personRepository;
 

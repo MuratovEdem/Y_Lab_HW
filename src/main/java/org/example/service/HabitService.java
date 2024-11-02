@@ -1,27 +1,30 @@
 package org.example.service;
 
 import org.example.annotations.Logging;
-import org.example.controller.ReminderController;
 import org.example.model.Habit;
 import org.example.repository.HabitRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+@Service
 @Logging
 public class HabitService {
 
     private final HabitRepository habitRepository;
-    private ReminderController reminderController;
+    private ReminderService reminderService;
 
-    public HabitService(HabitRepository habitRepository, ReminderController reminderController) {
+    @Autowired
+    public HabitService(HabitRepository habitRepository, ReminderService reminderService) {
         this.habitRepository = habitRepository;
-        this.reminderController = reminderController;
+        this.reminderService = reminderService;
     }
 
     public Habit createByPersonId(long personId, Habit habit) {
-        reminderController.remindOfHabit(habit, personId);
+        reminderService.remindOfHabit(habit, personId);
         return habitRepository.saveByPersonId(personId, habit);
     }
 
@@ -65,7 +68,7 @@ public class HabitService {
         return false;
     }
 
-    public void setReminderController(ReminderController reminderController) {
-        this.reminderController = reminderController;
+    public void setReminderService(ReminderService reminderService) {
+        this.reminderService = reminderService;
     }
 }

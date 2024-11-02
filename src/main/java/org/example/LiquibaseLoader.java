@@ -12,13 +12,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class LiquibaseLoader {
-    private Connection connection;
-
-    public LiquibaseLoader(Connection connection) {
-        this.connection = connection;
-    }
 
     public void runLiquibase() {
+        Connection connection = DataBaseConnection.getConnection();
         try {
             Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
 

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+@Logging
 @Service
 public class PersonService {
     private final PersonRepository personRepository;

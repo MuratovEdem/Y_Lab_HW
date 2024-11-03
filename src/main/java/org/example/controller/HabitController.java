@@ -2,9 +2,6 @@ package org.example.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.DTO.HabitDTO;
 import org.example.annotations.Logging;
@@ -13,7 +10,14 @@ import org.example.model.Habit;
 import org.example.service.HabitService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +37,8 @@ public class HabitController {
 
     @Operation (
             summary = "Get Person's habits",
-            description = "Получение списка привычек по идентификатору пользователя"
+            description = "Получение списка привычек по идентификатору пользователя" +
+                    "Пример запроса: http://localhost:8080/habits/person/2"
     )
     @GetMapping("/person/{person_id}")
     public ResponseEntity<List<HabitDTO>> getHabitsByPersonId(@PathVariable(name = "person_id") @Parameter(description = "Идентификатор пользователя") Long personId) {
@@ -42,7 +47,8 @@ public class HabitController {
 
     @Operation (
             summary = "Get habit",
-            description = "Получение привычки по идентификатору"
+            description = "Получение привычки по идентификатору" +
+                    "Пример запроса: http://localhost:8080/habits/1"
     )
     @GetMapping("/{id}")
     public ResponseEntity<HabitDTO> getById(@PathVariable(name = "id") @Parameter(description = "Идентификатор привычки") Long id) {
@@ -58,7 +64,17 @@ public class HabitController {
 
     @Operation (
             summary = "Edit habit",
-            description = "Изменение данных привычки"
+            description = "Изменение данных привычки" +
+                    "Пример тела запроса:" +
+                    "{\n" +
+                    "     \"id\": 2\n" +
+                    "     \"name\": \"jsonHabit\",\n" +
+                    "     \"description\": \"jsonDescription\",\n" +
+                    "     \"executionFrequency\": 3,\n" +
+                    "     \"numberExecutions\": 0,\n" +
+                    "     \"currentStreak\": 0,\n" +
+                    "     \"personId\": 3\n" +
+                    "}"
     )
     @PutMapping
     public ResponseEntity<Void> update(@RequestBody @Parameter(description = "Привычка с измененными данными") HabitDTO habitDTO) {
@@ -69,7 +85,17 @@ public class HabitController {
 
     @Operation (
             summary = "Create habit",
-            description = "Создание привычки по идентификатору пользователя"
+            description = "Создание привычки по идентификатору пользователя" +
+                    "Пример тела запроса:" +
+                    "{\n" +
+                    "     \"id\": 2\n" +
+                    "     \"name\": \"jsonHabit\",\n" +
+                    "     \"description\": \"jsonDescription\",\n" +
+                    "     \"executionFrequency\": 3,\n" +
+                    "     \"numberExecutions\": 0,\n" +
+                    "     \"currentStreak\": 0,\n" +
+                    "     \"personId\": 3\n" +
+                    "}"
     )
     @PostMapping("/person/{person_id}")
     public ResponseEntity<HabitDTO> createByPersonId(@PathVariable(name = "person_id") @Parameter(description = "Идентификатор пользователя") Long personId,
@@ -82,7 +108,8 @@ public class HabitController {
 
     @Operation (
             summary = "Remove habit",
-            description = "Удаление привычки по идентификатору"
+            description = "Удаление привычки по идентификатору" +
+                    "Пример запроса: http://localhost:8080/habits/1"
     )
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> removeById(@PathVariable(name = "id") @Parameter(description = "Идентификатор привычки") Long id) {
@@ -92,7 +119,17 @@ public class HabitController {
 
     @Operation (
             summary = "MarkCompletion habit",
-            description = "Отметить выполнение привычки"
+            description = "Отметить выполнение привычки" +
+                    "\"Пример тела запроса:\"" +
+                    "{\n" +
+                    "     \"id\": 2\n" +
+                    "     \"name\": \"jsonHabit\",\n" +
+                    "     \"description\": \"jsonDescription\",\n" +
+                    "     \"executionFrequency\": 3,\n" +
+                    "     \"numberExecutions\": 0,\n" +
+                    "     \"currentStreak\": 0,\n" +
+                    "     \"personId\": 3\n" +
+                    "}"
     )
     @PutMapping("/mark_completion")
     public ResponseEntity<Void> markCompletion(@RequestBody @Parameter(description = "Данные привычки") HabitDTO habitDTO) {

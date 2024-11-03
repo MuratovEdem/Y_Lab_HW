@@ -10,7 +10,14 @@ import org.example.model.Person;
 import org.example.service.PersonService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +37,8 @@ public class PersonController {
 
     @Operation(
             summary = "Get Persons",
-            description = "Получение списка пользователей"
+            description = "Получение списка пользователей" +
+                    "Пример запроса: http://localhost:8080/persons"
     )
     @GetMapping
     public ResponseEntity<List<PersonDTO>> getPersons() {
@@ -39,7 +47,8 @@ public class PersonController {
 
     @Operation(
             summary = "Get Person",
-            description = "Получение пользователя по идентификатору"
+            description = "Получение пользователя по идентификатору" +
+                    "Пример запроса: http://localhost:8080/persons/1"
     )
     @GetMapping("/{id}")
     public ResponseEntity<PersonDTO> getPersonById(@PathVariable(name = "id") @Parameter(description = "Идентификатор пользователя") Long id) {
@@ -55,7 +64,13 @@ public class PersonController {
 
     @Operation(
             summary = "Edit Person",
-            description = "Изменение данных пользователя"
+            description = "Изменение данных пользователя" +
+                    "Пример тела запроса:" +
+                    "{\n" +
+                    "     \"id\": 2,\n" +
+                    "     \"email\": \"newJsonEmail\",\n" +
+                    "     \"name\": \"newJsonName\"\n" +
+                    "}"
     )
     @PutMapping
     public ResponseEntity<Void> editPersonData(@RequestBody @Parameter(description = "Данные для изменения") PersonDTO personDTO) {
@@ -67,7 +82,14 @@ public class PersonController {
 
     @Operation(
             summary = "Create Person",
-            description = "Создание пользователя"
+            description = "Создание пользователя" +
+                    "{\n" +
+                    "     \"id\": 2,\n" +
+                    "     \"email\": \"email\",\n" +
+                    "     \"name\": \"name\",\n" +
+                    "     \"password: \"pass\",\n" +
+                    "     \"banned\": false" +
+                    "}"
     )
     @PostMapping
     public ResponseEntity<PersonDTO> create(@RequestBody @Parameter(description = "Данные пользователя") PersonDTO personDTO) {
@@ -79,7 +101,8 @@ public class PersonController {
 
     @Operation(
             summary = "Delete Person",
-            description = "Удаление пользователя по идентификатору"
+            description = "Удаление пользователя по идентификатору" +
+                    "Пример запроса: http://localhost:8080/persons/1"
     )
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> removeById(@PathVariable(name = "id") @Parameter(description = "Идентификатор пользователя") Long id) {

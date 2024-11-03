@@ -25,9 +25,9 @@ public class DataBaseConnection {
             String url = properties.getProperty("spring.datasource.url");
             String user = properties.getProperty("spring.datasource.username");
             String pass = properties.getProperty("spring.datasource.password");
+
             Class.forName("org.postgresql.Driver");
             connection = DriverManager.getConnection(url, user, pass);
-
         } catch (FileNotFoundException e) {
             System.out.println("File not found");
         } catch (IOException e) {

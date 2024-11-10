@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: Y_Lab_HW
+  datasource:
+    url: jdbc:postgresql://localhost:5433/ylab_db
+    username: ylab_user
+    password: ylab_pass
+    driver-class-name: org.postgresql.Driver

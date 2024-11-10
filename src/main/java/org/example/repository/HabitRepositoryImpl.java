@@ -3,6 +3,7 @@ package org.example.repository;
 import org.example.DataBaseConnection;
 import org.example.exception.JDBCExceptions;
 import org.example.model.Habit;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class HabitRepositoryImpl implements HabitRepository {
 
     @Override

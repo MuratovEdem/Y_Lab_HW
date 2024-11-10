@@ -38,7 +38,7 @@ public class PersonServiceTest {
     void setUp() throws SQLException {
         Connection connection = DriverManager.getConnection(postgreSQLContainer.getJdbcUrl(),
                 postgreSQLContainer.getUsername(), postgreSQLContainer.getPassword());
-        LiquibaseLoader liquibaseLoader = new LiquibaseLoader(connection);
+        LiquibaseLoader liquibaseLoader = new LiquibaseLoader();
         liquibaseLoader.runLiquibase();
 
         PersonRepository personRepository = new PersonRepositoryImpl();

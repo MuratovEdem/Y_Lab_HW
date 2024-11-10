@@ -16,15 +16,15 @@ public class DataBaseConnection {
     public static Connection getConnection() {
         Connection connection = null;
 
-        File configFile = new File("src\\main\\resources\\database.properties");
+        File configFile = new File("src\\main\\resources\\application.yml");
 
         try (FileReader reader = new FileReader(configFile)) {
             Properties properties = new Properties();
             properties.load(reader);
 
-            String url = properties.getProperty("url");
-            String user = properties.getProperty("username");
-            String pass = properties.getProperty("password");
+            String url = properties.getProperty("spring.datasource.url");
+            String user = properties.getProperty("spring.datasource.username");
+            String pass = properties.getProperty("spring.datasource.password");
 
             Class.forName("org.postgresql.Driver");
             connection = DriverManager.getConnection(url, user, pass);

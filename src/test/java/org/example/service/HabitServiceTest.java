@@ -1,7 +1,6 @@
 package org.example.service;
 
 import org.example.LiquibaseLoader;
-import org.example.controller.ReminderController;
 import org.example.model.Habit;
 import org.example.repository.HabitRepositoryImpl;
 import org.example.repository.HabitRepository;
@@ -24,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class HabitServiceTest {
     @Mock
-    ReminderController mockReminderController;
+    ReminderService mockReminderService;
 
     HabitService habitService;
 
@@ -44,11 +43,11 @@ public class HabitServiceTest {
     void setUp() throws SQLException {
         Connection connection = DriverManager.getConnection(postgreSQLContainer.getJdbcUrl(),
                 postgreSQLContainer.getUsername(), postgreSQLContainer.getPassword());
-        LiquibaseLoader liquibaseLoader = new LiquibaseLoader(connection);
+        LiquibaseLoader liquibaseLoader = new LiquibaseLoader();
         liquibaseLoader.runLiquibase();
 
         HabitRepository habitRepository = new HabitRepositoryImpl();
-        habitService = new HabitService(habitRepository, mockReminderController);
+        habitService = new HabitService(habitRepository, mockReminderService);
     }
 
     @Test
@@ -58,8 +57,7 @@ public class HabitServiceTest {
         Habit habit = new Habit("name", "descr", 2);
 
         ReminderService reminderService = Mockito.mock(ReminderService.class);
-        ReminderController reminderController = new ReminderController(reminderService);
-        habitService.setReminderController(reminderController);
+        habitService.setReminderService(reminderService);
 
         habitService.createByPersonId(personId, habit);
 
@@ -76,8 +74,7 @@ public class HabitServiceTest {
         Habit habit1 = new Habit("nameDTO1", "descrDTO1", 3);
 
         ReminderService reminderService = Mockito.mock(ReminderService.class);
-        ReminderController reminderController = new ReminderController(reminderService);
-        habitService.setReminderController(reminderController);
+        habitService.setReminderService(reminderService);
 
         habitService.createByPersonId(personId, habit);
         habitService.createByPersonId(personId, habit1);
@@ -98,8 +95,7 @@ public class HabitServiceTest {
         Habit habit1 = new Habit("nameDTO1", "descrDTO1", 3);
 
         ReminderService reminderService = Mockito.mock(ReminderService.class);
-        ReminderController reminderController = new ReminderController(reminderService);
-        habitService.setReminderController(reminderController);
+        habitService.setReminderService(reminderService);
 
         habitService.createByPersonId(personId, habit);
         habitService.createByPersonId(personId, habit1);
@@ -128,13 +124,12 @@ public class HabitServiceTest {
     void testMarkCompletionAllOk() {
         int personId = 1;
         int executionFrequency = 1;
-        Habit habiExpectedt = new Habit("name1", "descr1", executionFrequency);
+        Habit habitExpected = new Habit("name1", "descr1", executionFrequency);
 
         ReminderService reminderService = Mockito.mock(ReminderService.class);
-        ReminderController reminderController = new ReminderController(reminderService);
-        habitService.setReminderController(reminderController);
+        habitService.setReminderService(reminderService);
 
-        habitService.createByPersonId(personId, habiExpectedt);
+        habitService.createByPersonId(personId, habitExpected);
 
         Habit habit = habitService.getById(1).get();
 

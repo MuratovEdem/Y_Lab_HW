@@ -5,7 +5,12 @@ import org.example.exception.JDBCExceptions;
 import org.example.model.Habit;
 import org.springframework.stereotype.Repository;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,47 +28,49 @@ public class HabitRepositoryImpl implements HabitRepository {
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String querySelect = "SELECT * FROM model.habits WHERE id = ?";
 
-        Connection connection = DataBaseConnection.getConnection();
+        try (DataBaseConnection dataBaseConnection = new DataBaseConnection()) {
+            Connection connection = dataBaseConnection.getConnection();
 
-        try (PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-             PreparedStatement selectStatement = connection.prepareStatement(querySelect)){
-            connection.setAutoCommit(false);
+            try (PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                 PreparedStatement selectStatement = connection.prepareStatement(querySelect)) {
+                connection.setAutoCommit(false);
 
-            statement.setString(1, habit.getName());
-            statement.setString(2, habit.getDescription());
-            statement.setInt(3, habit.getExecutionFrequency());
-            statement.setInt(4, habit.getNumberExecutions());
-            statement.setInt(5, habit.getCurrentStreak());
-            statement.setDate(6, Date.valueOf(habit.getDateCreation()));
-            statement.setDate(7, Date.valueOf(habit.getLastReminder()));
-            statement.setDate(8, Date.valueOf(habit.getNextReminder()));
-            statement.setLong(9, id);
-            statement.execute();
+                statement.setString(1, habit.getName());
+                statement.setString(2, habit.getDescription());
+                statement.setInt(3, habit.getExecutionFrequency());
+                statement.setInt(4, habit.getNumberExecutions());
+                statement.setInt(5, habit.getCurrentStreak());
+                statement.setDate(6, Date.valueOf(habit.getDateCreation()));
+                statement.setDate(7, Date.valueOf(habit.getLastReminder()));
+                statement.setDate(8, Date.valueOf(habit.getNextReminder()));
+                statement.setLong(9, id);
+                statement.execute();
 
-            ResultSet generatedKeys = statement.getGeneratedKeys();
-            generatedKeys.next();
-            long habitId = generatedKeys.getLong(1);
+                ResultSet generatedKeys = statement.getGeneratedKeys();
+                generatedKeys.next();
+                long habitId = generatedKeys.getLong(1);
 
-            connection.commit();
-            connection.setAutoCommit(true);
-
-            selectStatement.setLong(1, habitId);
-
-            ResultSet resultSet = selectStatement.executeQuery();
-            resultSet.next();
-
-            createdHabit = getHabit(resultSet);
-            resultSet.close();
-        } catch (SQLException e) {
-            try {
-                connection.rollback();
+                connection.commit();
                 connection.setAutoCommit(true);
-                JDBCExceptions.printSQLException(e);
-            } catch (SQLException ex) {
-                JDBCExceptions.printSQLException(ex);
+
+                selectStatement.setLong(1, habitId);
+
+                ResultSet resultSet = selectStatement.executeQuery();
+                resultSet.next();
+
+                createdHabit = getHabit(resultSet);
+                resultSet.close();
+            } catch (SQLException e) {
+                try {
+                    connection.rollback();
+                    connection.setAutoCommit(true);
+                    JDBCExceptions.printSQLException(e);
+                } catch (SQLException ex) {
+                    JDBCExceptions.printSQLException(ex);
+                }
             }
-        } finally {
-            DataBaseConnection.closeConnection(connection);
+        } catch (SQLException e) {
+            JDBCExceptions.printSQLException(e);
         }
         return createdHabit;
     }
@@ -72,23 +79,24 @@ public class HabitRepositoryImpl implements HabitRepository {
     public List<Habit> getByPersonId(long personId) {
         List<Habit> habitList = new ArrayList<>();
         String query = "SELECT * FROM model.habits WHERE person_id = ?";
-        Connection connection = DataBaseConnection.getConnection();
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (DataBaseConnection dataBaseConnection = new DataBaseConnection()) {
+            Connection connection = dataBaseConnection.getConnection();
 
-            statement.setLong(1, personId);
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
 
-            ResultSet resultSet = statement.executeQuery();
+                statement.setLong(1, personId);
 
-            while (resultSet.next()) {
-                habitList.add(getHabit(resultSet));
+                ResultSet resultSet = statement.executeQuery();
+
+                while (resultSet.next()) {
+                    habitList.add(getHabit(resultSet));
+                }
+
+                resultSet.close();
             }
-
-            resultSet.close();
         } catch (SQLException e) {
             JDBCExceptions.printSQLException(e);
-        } finally {
-            DataBaseConnection.closeConnection(connection);
         }
 
         return habitList;
@@ -98,51 +106,53 @@ public class HabitRepositoryImpl implements HabitRepository {
     public Optional<Habit> getById(long id) {
         String query = "SELECT * FROM model.habits WHERE id = ?";
 
-        Connection connection = DataBaseConnection.getConnection();
+        try (DataBaseConnection dataBaseConnection = new DataBaseConnection()) {
+            Connection connection = dataBaseConnection.getConnection();
 
-        try (PreparedStatement statement = connection.prepareStatement(query)){
-            statement.setLong(1, id);
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setLong(1, id);
 
-            ResultSet resultSet = statement.executeQuery();
-            resultSet.next();
+                ResultSet resultSet = statement.executeQuery();
+                resultSet.next();
 
-            Habit habit = getHabit(resultSet);
+                Habit habit = getHabit(resultSet);
 
-            resultSet.close();
+                resultSet.close();
 
-            return Optional.of(habit);
-        } catch (SQLException e) {
-            JDBCExceptions.printSQLException(e);
-        } finally {
-            DataBaseConnection.closeConnection(connection);
+                return Optional.of(habit);
+            }
+        } catch (SQLException ex) {
+            JDBCExceptions.printSQLException(ex);
         }
-
         return Optional.empty();
     }
 
     @Override
     public void removeById(long id) {
         String query = "DELETE FROM model.habits WHERE id = ?";
-        Connection connection = DataBaseConnection.getConnection();
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            connection.setAutoCommit(false);
+        try (DataBaseConnection dataBaseConnection = new DataBaseConnection()) {
+            Connection connection = dataBaseConnection.getConnection();
 
-            statement.setLong(1, id);
-            statement.execute();
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                connection.setAutoCommit(false);
 
-            connection.commit();
-            connection.setAutoCommit(true);
-        } catch (SQLException e) {
-            try {
-                connection.rollback();
+                statement.setLong(1, id);
+                statement.execute();
+
+                connection.commit();
                 connection.setAutoCommit(true);
-                JDBCExceptions.printSQLException(e);
-            } catch (SQLException ex) {
-                JDBCExceptions.printSQLException(ex);
+            } catch (SQLException e) {
+                try {
+                    connection.rollback();
+                    connection.setAutoCommit(true);
+                    JDBCExceptions.printSQLException(e);
+                } catch (SQLException ex) {
+                    JDBCExceptions.printSQLException(ex);
+                }
             }
-        } finally {
-            DataBaseConnection.closeConnection(connection);
+        } catch (SQLException ex) {
+            JDBCExceptions.printSQLException(ex);
         }
     }
 
@@ -151,58 +161,62 @@ public class HabitRepositoryImpl implements HabitRepository {
         String query = "UPDATE model.habits SET name = ?, description = ?, execution_frequency = ?, number_executions = ?, " +
                 "current_streak = ?, date_creation = ?, last_reminder = ?, next_reminder = ? " +
                 "WHERE id = ?";
-        Connection connection = DataBaseConnection.getConnection();
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            connection.setAutoCommit(false);
+        try (DataBaseConnection dataBaseConnection = new DataBaseConnection()) {
+            Connection connection = dataBaseConnection.getConnection();
 
-            statement.setString(1, habit.getName());
-            statement.setString(2, habit.getDescription());
-            statement.setInt(3, habit.getExecutionFrequency());
-            statement.setInt(4, habit.getNumberExecutions());
-            statement.setInt(5, habit.getCurrentStreak());
-            statement.setDate(6, Date.valueOf(habit.getDateCreation()));
-            statement.setDate(7, Date.valueOf(habit.getLastReminder()));
-            statement.setDate(8, Date.valueOf(habit.getNextReminder()));
-            statement.setLong(9, habit.getId());
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                connection.setAutoCommit(false);
 
-            statement.execute();
+                statement.setString(1, habit.getName());
+                statement.setString(2, habit.getDescription());
+                statement.setInt(3, habit.getExecutionFrequency());
+                statement.setInt(4, habit.getNumberExecutions());
+                statement.setInt(5, habit.getCurrentStreak());
+                statement.setDate(6, Date.valueOf(habit.getDateCreation()));
+                statement.setDate(7, Date.valueOf(habit.getLastReminder()));
+                statement.setDate(8, Date.valueOf(habit.getNextReminder()));
+                statement.setLong(9, habit.getId());
 
-            connection.commit();
-            connection.setAutoCommit(true);
-        } catch (SQLException e) {
-            try {
-                JDBCExceptions.printSQLException(e);
-                connection.rollback();
+                statement.execute();
+
+                connection.commit();
                 connection.setAutoCommit(true);
-            } catch (SQLException ex) {
-                JDBCExceptions.printSQLException(ex);
+            } catch (SQLException e) {
+                try {
+                    JDBCExceptions.printSQLException(e);
+                    connection.rollback();
+                    connection.setAutoCommit(true);
+                } catch (SQLException ex) {
+                    JDBCExceptions.printSQLException(ex);
+                }
             }
-        } finally {
-            DataBaseConnection.closeConnection(connection);
+        } catch (SQLException e) {
+            JDBCExceptions.printSQLException(e);
         }
     }
 
     @Override
     public void addMarkInHistoryExecutionById(long habitId) {
-        Connection connection = DataBaseConnection.getConnection();
-        try {
-            connection.setAutoCommit(false);
+        String query = "INSERT INTO service.history_execution (date_execution, habit_id)" +
+                "VALUES (?, ?)";
 
-            String query = "INSERT INTO service.history_execution (date_execution, habit_id)" +
-                    "VALUES (?, ?)";
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setDate(1, Date.valueOf(LocalDate.now()));
-            statement.setLong(2, habitId);
+        try (DataBaseConnection dataBaseConnection = new DataBaseConnection()) {
+            Connection connection = dataBaseConnection.getConnection();
 
-            statement.execute();
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                connection.setAutoCommit(false);
 
-            connection.commit();
-            connection.setAutoCommit(true);
+                statement.setDate(1, Date.valueOf(LocalDate.now()));
+                statement.setLong(2, habitId);
+
+                statement.execute();
+
+                connection.commit();
+                connection.setAutoCommit(true);
+            }
         } catch (SQLException e) {
             JDBCExceptions.printSQLException(e);
-        } finally {
-            DataBaseConnection.closeConnection(connection);
         }
     }
 

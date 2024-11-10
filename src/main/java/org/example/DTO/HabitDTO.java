@@ -1,12 +1,20 @@
 package org.example.DTO;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public class HabitDTO {
+
     private long id;
+    @NotBlank
     private String name;
+    @NotNull
     private String description;
+    @NotNull
     private int executionFrequency;
     private int numberExecutions;
     private int currentStreak;
+    @NotNull
     private long personId;
 
     public void setId(long id) {

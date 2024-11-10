@@ -24,7 +24,7 @@ public class JDBCExceptions {
         }
     }
 
-    public static void printLiquiBaseException(LiquibaseException ex) {
+    public static void printLiquibaseException(LiquibaseException ex) {
         ex.printStackTrace(System.err);
 
         System.err.println("Сообщение: " + ex.getMessage());

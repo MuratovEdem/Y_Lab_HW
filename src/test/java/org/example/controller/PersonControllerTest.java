@@ -1,29 +1,38 @@
 package org.example.controller;
 
-import org.example.DTO.PersonDTO;
 import org.example.model.Person;
 import org.example.service.PersonService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.doNothing;
 
+@WebMvcTest(PersonController.class)
 public class PersonControllerTest {
 
-    private PersonService personService = mock(PersonService.class);
+    @Autowired
+    private MockMvc mockMvc;
 
+    @MockBean
+    private PersonService personService;
+
+    @DisplayName("Тест на получение списка всех Person")
     @Test
-    void getPersonsTest() {
+    void getPersonsTest() throws Exception {
         Person person = new Person("jsonEmail", "pass", "jsonName");
         person.setId(1);
         Person person1 = new Person("jsonEmail2", "pass2", "jsonName2");
@@ -35,76 +44,83 @@ public class PersonControllerTest {
 
         doReturn(personList).when(personService).getPersons();
 
-        PersonController personController = new PersonController(personService);
-
-        ResponseEntity<List<PersonDTO>> persons = personController.getPersons();
-
-        assertEquals(HttpStatus.OK, persons.getStatusCode());
-
-        assertEquals(1, persons.getBody().get(0).getId());
-        assertEquals(2, persons.getBody().get(1).getId());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/persons"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value(person.getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].password").value(person.getPassword()));
     }
 
+    @DisplayName("Тест на успешное получение Person по id")
     @Test
-    void getPersonByIdTest() {
+    void getPersonByIdAllOkTest() throws Exception {
         Person person = new Person("jsonEmail", "pass", "jsonName");
         person.setId(1);
 
         doReturn(Optional.of(person)).when(personService).getById(anyLong());
-        PersonController personController = new PersonController(personService);
 
-        ResponseEntity<PersonDTO> personById = personController.getPersonById(1L);
-
-        assertEquals(HttpStatus.OK, personById.getStatusCode());
-        assertEquals(1, personById.getBody().getId());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/persons/1"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(person.getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.password").value(person.getPassword()));
     }
 
+    @DisplayName("Тест на некорретный id для получения Person по id")
     @Test
-    void editPersonDataTest() {
-        PersonDTO personDTO = new PersonDTO();
-        personDTO.setId(1);
-        personDTO.setEmail("email");
-        personDTO.setName("name");
+    void getPersonByIdNotFoundTest() throws Exception {
+        doReturn(Optional.empty()).when(personService).getById(anyLong());
 
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/persons/2"))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @DisplayName("Тест на изменение данных")
+    @Test
+    void editPersonDataTest() throws Exception {
         doNothing().when(personService).editEmail(anyLong(), any());
         doNothing().when(personService).editName(anyLong(), any());
 
-        PersonController personController = new PersonController(personService);
-
-        ResponseEntity<Void> voidResponseEntity = personController.editPersonData(personDTO);
-
-        assertEquals(HttpStatus.OK, voidResponseEntity.getStatusCode());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.put("/persons")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"id\":1, \"name\": \"newname\", \"email\":\"newEmail.com\"}"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
+    @DisplayName("Тест на успешное создание нового Person")
     @Test
-    void createTest() {
+    void createValidDataTest() throws Exception {
         Person person = new Person("email", "pass", "name");
         person.setId(1);
 
-        PersonDTO personDTO = new PersonDTO();
-        personDTO.setId(1);
-        personDTO.setEmail("email");
-        personDTO.setName("name");
-        personDTO.setPassword("pass");
-
         doReturn(person).when(personService).create(any());
 
-        PersonController personController = new PersonController(personService);
-
-        ResponseEntity<PersonDTO> personDTOResponseEntity = personController.create(personDTO);
-
-        assertEquals(HttpStatus.CREATED, personDTOResponseEntity.getStatusCode());
-        assertEquals(1, personDTOResponseEntity.getBody().getId());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.post("/persons")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"id\":1, \"name\": \"name\", \"password\": \"pass\", \"email\":\"email\"}"))
+                .andExpect(MockMvcResultMatchers.status().isCreated());
     }
 
+    @DisplayName("Тест на некорректные входные данные при создании Person")
     @Test
-    void removeTest() {
+    void createInvalidDataTest() throws Exception {
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.post("/persons")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"id\":1, \"name\": null, \"password\": \"pass\", \"email\":\"email\"}"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @DisplayName("Тест на удаление Person по id")
+    @Test
+    void removeTest() throws Exception {
         doNothing().when(personService).removeById(anyLong());
 
-        PersonController personController = new PersonController(personService);
-
-        ResponseEntity<Void> voidResponseEntity = personController.removeById(1L);
-
-        assertEquals(HttpStatus.NO_CONTENT, voidResponseEntity.getStatusCode());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.delete("/persons/1"))
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
     }
 }

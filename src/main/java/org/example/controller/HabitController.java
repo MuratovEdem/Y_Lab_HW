@@ -3,13 +3,15 @@ package org.example.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.example.DTO.HabitDTO;
-import org.example.annotations.Logging;
 import org.example.mapper.HabitMapper;
 import org.example.model.Habit;
 import org.example.service.HabitService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +24,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import java.util.List;
 import java.util.Optional;
 
-@Logging
+@Validated
 @RestController
 @RequestMapping("/habits")
 @Tag(name = "Habits", description = "API для работы с привычками")
@@ -41,7 +43,7 @@ public class HabitController {
                     "Пример запроса: http://localhost:8080/habits/person/2"
     )
     @GetMapping("/person/{person_id}")
-    public ResponseEntity<List<HabitDTO>> getHabitsByPersonId(@PathVariable(name = "person_id") @Parameter(description = "Идентификатор пользователя") Long personId) {
+    public ResponseEntity<List<HabitDTO>> getHabitsByPersonId(@PathVariable(name = "person_id") @Min(1) @Parameter(description = "Идентификатор пользователя") Long personId) {
         return ResponseEntity.ok(habitMapper.habitsToHabitDTOList(habitService.getHabitsByPersonId(personId)));
     }
 
@@ -51,7 +53,7 @@ public class HabitController {
                     "Пример запроса: http://localhost:8080/habits/1"
     )
     @GetMapping("/{id}")
-    public ResponseEntity<HabitDTO> getById(@PathVariable(name = "id") @Parameter(description = "Идентификатор привычки") Long id) {
+    public ResponseEntity<HabitDTO> getById(@PathVariable(name = "id") @Min(1) @Parameter(description = "Идентификатор привычки") Long id) {
         Optional<Habit> optionalHabit = habitService.getById(id);
 
         if (optionalHabit.isPresent()) {
@@ -77,7 +79,7 @@ public class HabitController {
                     "}"
     )
     @PutMapping
-    public ResponseEntity<Void> update(@RequestBody @Parameter(description = "Привычка с измененными данными") HabitDTO habitDTO) {
+    public ResponseEntity<Void> update(@Valid @RequestBody @Parameter(description = "Привычка с измененными данными") HabitDTO habitDTO) {
         habitService.update(habitMapper.habitDTOToHabit(habitDTO));
 
         return ResponseEntity.ok().build();
@@ -98,8 +100,8 @@ public class HabitController {
                     "}"
     )
     @PostMapping("/person/{person_id}")
-    public ResponseEntity<HabitDTO> createByPersonId(@PathVariable(name = "person_id") @Parameter(description = "Идентификатор пользователя") Long personId,
-                                                     @RequestBody @Parameter(description = "Данные привычки для создания") HabitDTO habitDTO) {
+    public ResponseEntity<HabitDTO> createByPersonId(@PathVariable(name = "person_id") @Min(1) @Parameter(description = "Идентификатор пользователя") Long personId,
+                                                     @Valid @RequestBody @Parameter(description = "Данные привычки для создания") HabitDTO habitDTO) {
         Habit habit = habitMapper.habitDTOToHabit(habitDTO);
         HabitDTO createdHabit = habitMapper.habitToHabitDTO(habitService.createByPersonId(personId, habit));
 
@@ -112,7 +114,7 @@ public class HabitController {
                     "Пример запроса: http://localhost:8080/habits/1"
     )
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> removeById(@PathVariable(name = "id") @Parameter(description = "Идентификатор привычки") Long id) {
+    public ResponseEntity<Void> removeById(@PathVariable(name = "id") @Min(1) @Parameter(description = "Идентификатор привычки") Long id) {
         habitService.removeById(id);
         return ResponseEntity.noContent().build();
     }
@@ -132,11 +134,14 @@ public class HabitController {
                     "}"
     )
     @PutMapping("/mark_completion")
-    public ResponseEntity<Void> markCompletion(@RequestBody @Parameter(description = "Данные привычки") HabitDTO habitDTO) {
+    public ResponseEntity<Void> markCompletion(@Valid @RequestBody @Parameter(description = "Данные привычки") HabitDTO habitDTO) {
         Habit habit = habitMapper.habitDTOToHabit(habitDTO);
-        habitService.markCompletion(habit);
 
-        return ResponseEntity.ok().build();
+        if (habitService.markCompletion(habit)) {
+            return ResponseEntity.ok().build();
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
     }
 }
 

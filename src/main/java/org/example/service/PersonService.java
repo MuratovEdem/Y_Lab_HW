@@ -1,15 +1,14 @@
 package org.example.service;
 
-import org.example.annotations.Logging;
+import org.example.auditablestarter.annotations.Auditable;
 import org.example.model.Person;
 import org.example.repository.PersonRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
-@Logging
+@Auditable
 @Service
 public class PersonService {
     private final PersonRepository personRepository;
@@ -40,11 +39,6 @@ public class PersonService {
 
     public Person create(Person person) {
         return personRepository.save(person);
-    }
-
-    public String getPasswordResetCode() {
-        Random random = new Random();
-        return String.valueOf(random.nextInt(100, 999));
     }
 
     public void removeById(long personId) {

@@ -2,12 +2,12 @@ package org.example.service;
 
 import org.example.LiquibaseLoader;
 import org.example.model.Person;
-import org.example.repository.PersonRepositoryImpl;
-import org.example.repository.PersonRepository;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.sql.Connection;
@@ -16,13 +16,17 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SpringBootTest
 public class PersonServiceTest {
 
-    PersonService personService;
+    @Autowired
+    private PersonService personService;
 
-    static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:14.8-alpine3.18");
+    private static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:14.8-alpine3.18");
 
     @BeforeAll
     static void beforeAll() {
@@ -40,9 +44,6 @@ public class PersonServiceTest {
                 postgreSQLContainer.getUsername(), postgreSQLContainer.getPassword());
         LiquibaseLoader liquibaseLoader = new LiquibaseLoader();
         liquibaseLoader.runLiquibase();
-
-        PersonRepository personRepository = new PersonRepositoryImpl();
-        personService = new PersonService(personRepository);
     }
 
     @Test

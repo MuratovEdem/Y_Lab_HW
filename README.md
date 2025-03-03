@@ -2,4 +2,4 @@ Web приложение для создания и редактирования
 
 Проект выполненный на стажировке
 
-Стек технологий: Java, Liquibase, PostgreSQL, Docker, Mockito
+Стек технологий: Java 17, Spring Framework Liquibase, PostgreSQL, Docker, Mockito

@@ -1,9 +1,14 @@
 package org.example.DTO;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class PersonDTO {
     private long id;
+    @NotBlank
     private String email;
+    @NotBlank
     private String name;
+    @NotBlank
     private String password;
 
     private boolean isAdmin;

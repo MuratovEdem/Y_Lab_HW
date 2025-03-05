@@ -1,29 +1,38 @@
 package org.example.controller;
 
-import org.example.DTO.HabitDTO;
 import org.example.model.Habit;
 import org.example.service.HabitService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.doNothing;
 
+@WebMvcTest(HabitController.class)
 public class HabitControllerTest {
 
-    private HabitService habitService = mock(HabitService.class);
+    @Autowired
+    private MockMvc mockMvc;
 
+    @MockBean
+    private HabitService habitService;
+
+    @DisplayName("Тест на получение списка Habit у Person по id")
     @Test
-    void getHabitsByPersonIdTest() {
+    void getHabitsByPersonIdTest() throws Exception {
         Habit habit = new Habit("name", "descr", 2);
         habit.setId(1);
         Habit habit1 = new Habit("name1", "descr1", 3);
@@ -35,90 +44,112 @@ public class HabitControllerTest {
 
         doReturn(habitList).when(habitService).getHabitsByPersonId(anyLong());
 
-        HabitController habitController = new HabitController(habitService);
-
-        ResponseEntity<List<HabitDTO>> habitsByPersonId = habitController.getHabitsByPersonId(1L);
-
-        assertEquals(HttpStatus.OK, habitsByPersonId.getStatusCode());
-
-        assertEquals(1, habitsByPersonId.getBody().get(0).getId());
-        assertEquals(2, habitsByPersonId.getBody().get(1).getId());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/habits/person/1"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
+    @DisplayName("Тест на успешное получение Habit по id")
     @Test
-    void getByIdTest() {
+    void getByIdAllOkTest() throws Exception {
         Habit habit = new Habit("name", "descr", 2);
         habit.setId(1);
 
         doReturn(Optional.of(habit)).when(habitService).getById(anyLong());
 
-        HabitController habitController = new HabitController(habitService);
-
-        ResponseEntity<HabitDTO> byId = habitController.getById(1L);
-
-        assertEquals(HttpStatus.OK, byId.getStatusCode());
-        assertEquals(1, byId.getBody().getId());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/habits/1"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
+    @DisplayName("Тест на некорретный id для получения Habit по id")
     @Test
-    void updateTest() {
-        HabitDTO habitDTO = new HabitDTO();
-        habitDTO.setId(1);
-        habitDTO.setName("name");
-        habitDTO.setDescription("descr");
-        habitDTO.setPersonId(1);
+    void getByIdNotFoundTest() throws Exception {
+        doReturn(Optional.empty()).when(habitService).getById(anyLong());
 
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/habits/1"))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @DisplayName("Тест на изменение данных")
+    @Test
+    void updateTest() throws Exception {
         doNothing().when(habitService).update(any());
 
-        HabitController habitController = new HabitController(habitService);
-        ResponseEntity<Void> update = habitController.update(habitDTO);
-
-        assertEquals(HttpStatus.OK, update.getStatusCode());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.put("/habits")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"id\":1, \"name\": \"name\", \"description\":\"desc\"," +
+                                "\"executionFrequency\":2, \"numberExecutions\":1, \"currentStreak\":1," +
+                                "\"personId\":1}"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
+    @DisplayName("Тест на успешное создание новой Habit")
     @Test
-    void createByPersonIdTest() {
+    void createByPersonIdValidDataTest() throws Exception {
         Habit habit = new Habit("name", "descr", 2);
         habit.setId(1);
 
-        HabitDTO habitDTO = new HabitDTO();
-        habitDTO.setId(1);
-        habitDTO.setName("name");
-        habitDTO.setDescription("descr");
-        habitDTO.setPersonId(1);
-
         doReturn(habit).when(habitService).createByPersonId(anyLong(), any());
 
-        HabitController habitController = new HabitController(habitService);
-        ResponseEntity<HabitDTO> byPersonId = habitController.createByPersonId(1L, habitDTO);
-
-        assertEquals(HttpStatus.CREATED, byPersonId.getStatusCode());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.post("/habits/person/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"id\":1, \"name\": \"name\", \"description\":\"desc\"," +
+                                "\"executionFrequency\":2, \"numberExecutions\":1, \"currentStreak\":1," +
+                                "\"personId\":1}"))
+                .andExpect(MockMvcResultMatchers.status().isCreated());
     }
 
+    @DisplayName("Тест на некорректные входные данные при создании Habit")
     @Test
-    void removeByIdTest() {
+    void createByPersonIdInValidDataTest() throws Exception {
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.post("/habits/person/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"id\":1, \"name\": null, \"description\":\"desc\"," +
+                                "\"executionFrequency\":2, \"numberExecutions\":1, \"currentStreak\":1," +
+                                "\"personId\":1}"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @DisplayName("Тест на удаление Habit по id")
+    @Test
+    void removeByIdTest() throws Exception {
         doNothing().when(habitService).removeById(anyLong());
 
-        HabitController habitController = new HabitController(habitService);
-
-        ResponseEntity<Void> voidResponseEntity = habitController.removeById(1L);
-
-        assertEquals(HttpStatus.NO_CONTENT, voidResponseEntity.getStatusCode());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.delete("/habits/1"))
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
     }
 
+    @DisplayName("Тест на успешную отметку о выполнении Habit")
     @Test
-    void markCompletionTest() {
-        HabitDTO habitDTO = new HabitDTO();
-        habitDTO.setId(1);
-        habitDTO.setName("name");
-        habitDTO.setDescription("descr");
-        habitDTO.setPersonId(1);
-
+    void markCompletionTrueTest() throws Exception {
         doReturn(true).when(habitService).markCompletion(any());
 
-        HabitController habitController = new HabitController(habitService);
-        ResponseEntity<Void> voidResponseEntity = habitController.markCompletion(habitDTO);
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.put("/habits/mark_completion")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"id\":1, \"name\": \"name\", \"description\":\"desc\"," +
+                                "\"executionFrequency\":2, \"numberExecutions\":1, \"currentStreak\":1," +
+                                "\"personId\":1}"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
 
-        assertEquals(HttpStatus.OK, voidResponseEntity.getStatusCode());
+    @DisplayName("Тест на не успешную отметку о выполнении Habit")
+    @Test
+    void markCompletionFalseTest() throws Exception {
+        doReturn(false).when(habitService).markCompletion(any());
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.put("/habits/mark_completion")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"id\":1, \"name\": \"name\", \"description\":\"desc\"," +
+                                "\"executionFrequency\":2, \"numberExecutions\":1, \"currentStreak\":1," +
+                                "\"personId\":1}"))
+                .andExpect(MockMvcResultMatchers.status().isNotModified());
     }
 }

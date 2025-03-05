@@ -1,6 +1,6 @@
 package org.example.service;
 
-import org.example.annotations.Logging;
+import org.example.auditablestarter.annotations.Auditable;
 import org.example.model.Habit;
 import org.example.repository.HabitRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +10,12 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+@Auditable
 @Service
-@Logging
 public class HabitService {
 
     private final HabitRepository habitRepository;
+
     private ReminderService reminderService;
 
     @Autowired
@@ -23,16 +24,16 @@ public class HabitService {
         this.reminderService = reminderService;
     }
 
-    public Habit createByPersonId(long personId, Habit habit) {
+    public Habit createByPersonId(Long personId, Habit habit) {
         reminderService.remindOfHabit(habit, personId);
         return habitRepository.saveByPersonId(personId, habit);
     }
 
-    public List<Habit> getHabitsByPersonId(long personId) {
+    public List<Habit> getHabitsByPersonId(Long personId) {
         return habitRepository.getByPersonId(personId);
     }
 
-    public Optional<Habit> getById(long habitId) {
+    public Optional<Habit> getById(Long habitId) {
         return habitRepository.getById(habitId);
     }
 
@@ -40,7 +41,7 @@ public class HabitService {
         habitRepository.update(habit);
     }
 
-    public void removeById(long habitId) {
+    public void removeById(Long habitId) {
         habitRepository.removeById(habitId);
     }
 
@@ -66,9 +67,5 @@ public class HabitService {
             habitRepository.update(habit);
         }
         return false;
-    }
-
-    public void setReminderService(ReminderService reminderService) {
-        this.reminderService = reminderService;
     }
 }
